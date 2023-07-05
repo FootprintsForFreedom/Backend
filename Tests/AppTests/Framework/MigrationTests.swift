@@ -15,13 +15,17 @@ final class MigrationTests: XCTestCase {
         
         try configure(app)
         app.databases.reinitialize()
-        app.databases.use(.postgres(
-            hostname: Environment.dbHost,
-            port: Environment.dbPort.flatMap(Int.init(_:)) ?? PostgresConfiguration.ianaPortNumber,
-            username: Environment.pgUser,
-            password: Environment.pgPassword,
-            database: Environment.pgTestDbName
-        ), as: .psql)
+        app.databases.use(
+            .postgres(configuration: SQLPostgresConfiguration(
+                hostname: Environment.dbHost,
+                port: Environment.dbPort.flatMap(Int.init(_:)) ?? SQLPostgresConfiguration.ianaPortNumber,
+                username: Environment.pgUser,
+                password: Environment.pgPassword,
+                database: Environment.pgTestDbName,
+                tls: .disable
+            )),
+            as: .psql
+        )
         app.databases.default(to: .psql)
         app.passwords.use(.plaintext)
         

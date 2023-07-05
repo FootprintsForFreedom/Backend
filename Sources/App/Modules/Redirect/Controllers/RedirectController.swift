@@ -22,7 +22,7 @@ struct RedirectController {
             .filter(\.$source == path)
             .first() {
             let query = req.url.query ?? ""
-            return req.redirect(to: redirect.destination.appending("?\(query)"), type: .permanent)
+            return req.redirect(to: redirect.destination.appending("?\(query)"), redirectType: .permanent)
         }
         throw Abort(.internalServerError)
     }

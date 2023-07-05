@@ -31,13 +31,17 @@ public func configure(_ app: Application) throws {
     // uncomment to serve files from /Public folder
     // app.middleware.use(FileMiddleware(publicDirectory: app.directory.publicDirectory))
     
-    app.databases.use(.postgres(
-        hostname: Environment.dbHost,
-        port: Environment.dbPort.flatMap(Int.init(_:)) ?? PostgresConfiguration.ianaPortNumber,
-        username: Environment.pgUser,
-        password: Environment.pgPassword,
-        database: Environment.pgDbName
-    ), as: .psql)
+    app.databases.use(
+        .postgres(configuration: SQLPostgresConfiguration(
+            hostname: Environment.dbHost,
+            port: Environment.dbPort.flatMap(Int.init(_:)) ?? SQLPostgresConfiguration.ianaPortNumber,
+            username: Environment.pgUser,
+            password: Environment.pgPassword,
+            database: Environment.pgDbName,
+            tls: .disable
+        )),
+        as: .psql
+    )
     
     // setup queues
     try app.queues.use(.redis(url: Environment.redisUrl))
