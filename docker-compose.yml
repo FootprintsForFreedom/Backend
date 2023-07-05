@@ -25,18 +25,23 @@ volumes:
   esdata:
   
 services:
+
   app:
-    image: digital-traces-backend:1.0
+    image: niklhut/footprintsforfreedombackend:1.0
     build:
       context: .
     env_file: .env.production
     depends_on:
-      - db
-      - queues
-      - redis
-      - elasticsearch
-      - geoipupdate
-    
+      db: 
+        condition: service_healthy
+      queues:
+        condition: service_started
+      redis:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+      geoipupdate:
+        condition: service_healthy
     volumes:
       # - "public_data:/app/Public"
     # uncomment this to preserve the Public files over app restarts
@@ -46,46 +51,82 @@ services:
     command: ["serve", "--env", "production", "--hostname", "0.0.0.0", "--port", "8080"]
     ports:
       - "8080:8080"
+
   queues: 
-    image: digital-traces-backend:1.0
+    image: niklhut/footprintsforfreedombackend:1.0
     build:
       context: .
     env_file: .env.production
     depends_on:
-      - db
-      - redis
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - "geoipupdate_data:/app/Resources/GeoIP"
     command: ["queues", "--scheduled"]
+
   migrate:
-    image: digital-traces-backend:1.0
+    image: niklhut/footprintsforfreedombackend:1.0
     build:
       context: .
     env_file: .env.production
     depends_on:
-      - db
-      - redis
-      - elasticsearch
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+      geoipupdate:
+        condition: service_healthy
+    volumes:
+      - "geoipupdate_data:/app/Resources/GeoIP"
     command: ["migrate", "--yes"]
     deploy:
       replicas: 0
+  
   revert:
-    image: digital-traces-backend:1.0
+    image: niklhut/footprintsforfreedombackend:1.0
     build:
       context: .
     env_file: .env.production
     depends_on:
-      - db
-      - redis
-      - elasticsearch
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+      geoipupdate:
+        condition: service_healthy
+    volumes:
+      - "geoipupdate_data:/app/Resources/GeoIP"
     command: ["migrate", "--revert", "--yes"]
     deploy:
       replicas: 0
+
   db:
     image: postgres:15-alpine
     volumes:
       - db_data:/var/lib/postgresql/data/pgdata
     env_file: .env.production
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 5s
+      retries: 5
+      start_period: 5s
+      timeout: 5s
+
   redis:
     image: redis:latest
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      retries: 5
+      start_period: 5s
+      timeout: 5s
+
   caddy:
     image: caddy:latest
     depends_on:
@@ -98,17 +139,20 @@ services:
       - ./Caddyfile:/etc/caddy/Caddyfile
       - caddy_data:/data
       - caddy_config:/config
+
   geoipupdate:
-    container_name: geoipupdate
     image: maxmindinc/geoipupdate
-    restart: unless-stopped
-    environment:
-      - GEOIPUPDATE_ACCOUNT_ID=807715
-      - GEOIPUPDATE_LICENSE_KEY=X6K05iqC4iyEc6ET
-      - 'GEOIPUPDATE_EDITION_IDS=GeoLite2-City'
-      - GEOIPUPDATE_FREQUENCY=72
+    # restart: unless-stopped
+    env_file: .env.production
     volumes:
       - 'geoipupdate_data:/usr/share/GeoIP'
+    healthcheck:
+      test: sh -c '[ -f /usr/share/GeoIP/GeoLite2-City.mmdb ]'
+      interval: 5s
+      retries: 5
+      timeout: 5s
+
+
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.6.1
     environment:
@@ -125,11 +169,19 @@ services:
         hard: -1
     volumes:
       - esdata:/usr/share/elasticsearch/data
+    healthcheck:
+      test: curl --fail http://localhost:9200 || exit 1
+      interval: 5s
+      retries: 5
+      start_period: 5s
+      timeout: 5s
+
   kibana:
     image: docker.elastic.co/kibana/kibana:8.6.1
     env_file: .env
     depends_on:
-      - elasticsearch
+      elasticsearch:
+        condition: service_healthy
     ports:
     - 5601:5601
 
