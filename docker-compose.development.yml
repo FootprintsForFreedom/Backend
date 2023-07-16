@@ -1,0 +1,72 @@
+version: '3.7'
+  
+services:
+
+  db:
+    image: postgres:15-alpine
+    env_file: .env
+    ports:
+      - 5432:5432
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
+      interval: 5s
+      retries: 5
+      start_period: 5s
+      timeout: 5s
+
+  redis:
+    image: redis:latest
+    ports:
+      - 6379:6379
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      retries: 5
+      start_period: 5s
+      timeout: 5s
+
+  geoipupdate:
+    image: maxmindinc/geoipupdate
+    env_file: .env
+    volumes:
+      - './Resources/GeoIP:/usr/share/GeoIP'
+    healthcheck:
+      test: sh -c '[ -f /usr/share/GeoIP/GeoLite2-City.mmdb ]'
+      interval: 5s
+      retries: 5
+      timeout: 5s
+
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.6.1
+    environment:
+      - node.name=es-node
+      - discovery.type=single-node
+      - cluster.name=es-data-cluster
+      - bootstrap.memory_lock=true
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms1024m -Xmx1024m"
+    env_file: .env
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - 9200:9200
+      - 9300:9300
+    healthcheck:
+      test: curl --fail http://localhost:9200 || exit 1
+      interval: 5s
+      retries: 5
+      start_period: 10s
+      timeout: 5s
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.6.1
+    env_file: .env
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    ports:
+    - 5601:5601
+
