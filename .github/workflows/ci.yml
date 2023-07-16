@@ -202,7 +202,7 @@ jobs:
           --output-path ./docs \
           --disable-indexing \
           --transform-for-static-hosting \
-          --hosting-base-path FootprintsForFreedomBackend
+          --hosting-base-path ${{ github.event.repository.name }}
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v2
