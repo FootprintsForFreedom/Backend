@@ -46,20 +46,22 @@ public func configure(_ app: Application) throws {
     // setup queues
     try app.queues.use(.redis(url: Environment.redisUrl))
     
-    app.queues.schedule(CleanupEmptyRepositoriesJob())
-        .weekly()
-        .on(.tuesday)
-        .at(2, 0)
-    
-    app.queues.schedule(CleanupOldVerifiedModelsJob())
-        .weekly()
-        .on(.wednesday)
-        .at(2, 0)
-    
-    app.queues.schedule(CleanupSoftDeletedModelsJob())
-        .weekly()
-        .on(.thursday)
-        .at(2, 0)
+    if app.environment != .testing {
+        app.queues.schedule(CleanupEmptyRepositoriesJob())
+            .weekly()
+            .on(.tuesday)
+            .at(2, 0)
+        
+        app.queues.schedule(CleanupOldVerifiedModelsJob())
+            .weekly()
+            .on(.wednesday)
+            .at(2, 0)
+        
+        app.queues.schedule(CleanupSoftDeletedModelsJob())
+            .weekly()
+            .on(.thursday)
+            .at(2, 0)
+    }
     
     // Initialize SwiftSMTP
     app.swiftSMTP.initialize(with: .fromEnvironment())
