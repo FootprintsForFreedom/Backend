@@ -32,7 +32,7 @@ let package = Package(
         .target(name: "AppApi", dependencies: [
             .product(name: "SwiftDiff", package: "SwiftDiff"),
         ]),
-        .target(
+        .executableTarget(
             name: "App",
             dependencies: [
                 .product(name: "Fluent", package: "fluent"),
@@ -57,7 +57,6 @@ let package = Package(
                 .unsafeFlags(["-cross-module-optimization"], .when(configuration: .release))
             ]
         ),
-        .executableTarget(name: "Run", dependencies: [.target(name: "App")]),
         .testTarget(
             name: "AppTests",
             dependencies: [
