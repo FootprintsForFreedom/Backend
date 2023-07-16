@@ -27,6 +27,7 @@ let package = Package(
         .package(url: "https://github.com/niklhut/elasticsearch-nio-client.git", branch: "custom"),
         .package(url: "https://github.com/SwiftPackageRepository/ISO639.swift.git", branch: "master"),
         .package(url: "https://github.com/niklhut/swift-mmdb.git", branch: "city"),
+        .package(url: "https://github.com/nicklockwood/SwiftFormat", from: "0.50.4"),
     ],
     targets: [
         .target(name: "AppApi", dependencies: [
