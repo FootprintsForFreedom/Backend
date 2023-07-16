@@ -1,10 +1,3 @@
-//
-//  ElasticFilter.swift
-//  
-//
-//  Created by niklhut on 07.10.22.
-//
-
 import Foundation
 
 /// Represents an elasticsearch filter.
@@ -21,7 +14,7 @@ enum ElasticFilter: Equatable {
     case cjkWidth
     case cjkBigram
     case decimalDigit
-    
+
     /// The filter's name.
     var name: String {
         switch self {
@@ -39,7 +32,7 @@ enum ElasticFilter: Equatable {
         case .decimalDigit: return "decimal_digit"
         }
     }
-    
+
     /// The filter's json representation if it is not a default filter.
     var customFilter: (any CustomElasticFilter)? {
         switch self {

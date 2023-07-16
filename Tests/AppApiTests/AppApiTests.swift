@@ -1,14 +1,4 @@
-//
-//  AppApiTests.swift
-//  
-//
-//  Created by niklhut on 01.02.22.
-//
-
-@testable import AppApi
 import XCTest
+@testable import AppApi
 
-final class AppApiTests: XCTestCase {
-    
-}
-
+final class AppApiTests: XCTestCase { }

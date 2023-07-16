@@ -1,14 +1,7 @@
-//
-//  TagApiCreateReportTests.swift
-//  
-//
-//  Created by niklhut on 08.06.22.
-//
-
-@testable import App
-import XCTVapor
 import Fluent
 import Spec
+import XCTVapor
+@testable import App
 
 extension Report.Create: Content { }
 
@@ -18,15 +11,15 @@ final class TagApiCreateReportTests: AppTestCase, TagTest {
         reason: String = "Just because",
         visibleDetailId: UUID
     ) -> Report.Create {
-        return .init(title: title, reason: reason, visibleDetailId: visibleDetailId)
+        .init(title: title, reason: reason, visibleDetailId: visibleDetailId)
     }
-    
+
     func testSuccessfulCreateReport() async throws {
         let token = try await getToken(for: .user, verified: true)
         let tag = try await createNewTag()
-        let newReport = getTagReportCreateContent(visibleDetailId: try tag.detail.requireID())
+        let newReport = try getTagReportCreateContent(visibleDetailId: tag.detail.requireID())
         try await tag.detail.$language.load(on: app.db)
-        
+
         try app
             .describe("Create new report as verified user should return ok")
             .post(tagPath.appending("\(tag.repository.requireID())/reports"))
@@ -50,13 +43,13 @@ final class TagApiCreateReportTests: AppTestCase, TagTest {
             }
             .test()
     }
-    
+
     func testCreateReportAsUnverifiedUserFails() async throws {
         let token = try await getToken(for: .user, verified: false)
         let tag = try await createNewTag()
-        let newReport = getTagReportCreateContent(visibleDetailId: try tag.detail.requireID())
+        let newReport = try getTagReportCreateContent(visibleDetailId: tag.detail.requireID())
         try await tag.detail.$language.load(on: app.db)
-        
+
         try app
             .describe("Create new report as unverified user should fail")
             .post(tagPath.appending("\(tag.repository.requireID())/reports"))
@@ -65,12 +58,12 @@ final class TagApiCreateReportTests: AppTestCase, TagTest {
             .expect(.forbidden)
             .test()
     }
-    
+
     func testCreateReportWithoutTokenFails() async throws {
         let tag = try await createNewTag()
-        let newReport = getTagReportCreateContent(visibleDetailId: try tag.detail.requireID())
+        let newReport = try getTagReportCreateContent(visibleDetailId: tag.detail.requireID())
         try await tag.detail.$language.load(on: app.db)
-        
+
         try app
             .describe("Create new report without token should fail")
             .post(tagPath.appending("\(tag.repository.requireID())/reports"))
@@ -78,13 +71,13 @@ final class TagApiCreateReportTests: AppTestCase, TagTest {
             .expect(.unauthorized)
             .test()
     }
-    
+
     func testCreateReportNeedsValidTitle() async throws {
         let token = try await getToken(for: .user, verified: true)
         let tag = try await createNewTag()
-        let newReport = getTagReportCreateContent(title: "", visibleDetailId: try tag.detail.requireID())
+        let newReport = try getTagReportCreateContent(title: "", visibleDetailId: tag.detail.requireID())
         try await tag.detail.$language.load(on: app.db)
-        
+
         try app
             .describe("Create new report should require valid title and fail")
             .post(tagPath.appending("\(tag.repository.requireID())/reports"))
@@ -93,13 +86,13 @@ final class TagApiCreateReportTests: AppTestCase, TagTest {
             .expect(.badRequest)
             .test()
     }
-    
+
     func testCreateReportNeedsValidReason() async throws {
         let token = try await getToken(for: .user, verified: true)
         let tag = try await createNewTag()
-        let newReport = getTagReportCreateContent(reason: "", visibleDetailId: try tag.detail.requireID())
+        let newReport = try getTagReportCreateContent(reason: "", visibleDetailId: tag.detail.requireID())
         try await tag.detail.$language.load(on: app.db)
-        
+
         try app
             .describe("Create new report should require valid reason and fail")
             .post(tagPath.appending("\(tag.repository.requireID())/reports"))
@@ -108,14 +101,14 @@ final class TagApiCreateReportTests: AppTestCase, TagTest {
             .expect(.badRequest)
             .test()
     }
-    
+
     func testCreateReportNeedsValidVisibleDetailId() async throws {
         let token = try await getToken(for: .user, verified: true)
         let tag = try await createNewTag()
         let tag2 = try await createNewTag()
-        let newReport = getTagReportCreateContent(visibleDetailId: try tag.detail.requireID())
+        let newReport = try getTagReportCreateContent(visibleDetailId: tag.detail.requireID())
         try await tag.detail.$language.load(on: app.db)
-        
+
         try app
             .describe("Create new report should require valid visible detail id and fail")
             .post(tagPath.appending("\(tag2.repository.requireID())/reports"))

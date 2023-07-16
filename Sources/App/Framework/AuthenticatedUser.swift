@@ -1,10 +1,3 @@
-//
-//  AuthenticatedUser.swift
-//  
-//
-//  Created by niklhut on 01.02.22.
-//
-
 import Vapor
 
 /// Represents an authenticated user.
@@ -13,7 +6,7 @@ public struct AuthenticatedUser: Authenticatable {
     public let id: UUID
     /// The email of the user.
     public let email: String
-    
+
     /// Initializes an authenticated user.
     /// - Parameters:
     ///   - id: The user id.

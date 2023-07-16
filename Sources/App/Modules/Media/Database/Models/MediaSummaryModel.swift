@@ -1,22 +1,15 @@
-//
-//  MediaSummaryModel.swift
-//  
-//
-//  Created by niklhut on 09.01.23.
-//
-
-import Vapor
-import Fluent
 import AppApi
 import ElasticsearchNIOClient
+import Fluent
+import Vapor
 
 final class MediaSummaryModel: DatabaseElasticInterface {
     typealias Module = MediaModule
-    
+
     static var schema: String = "media_summaries"
-    
-    struct FieldKeys {
-        struct v1 {
+
+    enum FieldKeys {
+        enum v1 {
             // MediaDetail
             static var waypointId: FieldKey { "waypoint_id" }
             static var title: FieldKey { "title" }
@@ -47,9 +40,9 @@ final class MediaSummaryModel: DatabaseElasticInterface {
             static var languageId: FieldKey { "language_id" }
         }
     }
-    
+
     @ID() var id: UUID?
-    
+
     @Field(key: FieldKeys.v1.waypointId) var waypointId: UUID
     @Field(key: FieldKeys.v1.detailId) var detailId: UUID
     @Field(key: FieldKeys.v1.title) var title: String
@@ -61,7 +54,7 @@ final class MediaSummaryModel: DatabaseElasticInterface {
     @OptionalField(key: FieldKeys.v1.detailCreatedAt) var detailCreatedAt: Date?
     @OptionalField(key: FieldKeys.v1.detailUpdatedAt) var detailUpdatedAt: Date?
     @OptionalField(key: FieldKeys.v1.detailDeletedAt) var detailDeletedAt: Date?
-    
+
     @Field(key: FieldKeys.v1.fileId) var fileId: UUID
     @Field(key: FieldKeys.v1.mediaDirectory) var relativeMediaFilePath: String
     @Enum(key: FieldKeys.v1.fileType) var fileType: Media.Detail.FileType
@@ -69,13 +62,13 @@ final class MediaSummaryModel: DatabaseElasticInterface {
     @OptionalField(key: FieldKeys.v1.fileCreatedAt) var fileCreatedAt: Date?
     @OptionalField(key: FieldKeys.v1.fileUpdatedAt) var fileUpdatedAt: Date?
     @OptionalField(key: FieldKeys.v1.fileDeletedAt) var fileDeletedAt: Date?
-    
+
     @Field(key: FieldKeys.v1.languageId) var languageId: UUID
     @Field(key: FieldKeys.v1.languageName) var languageName: String
     @Field(key: FieldKeys.v1.languageCode) var languageCode: String
     @Field(key: FieldKeys.v1.languageIsRTL) var languageIsRTL: Bool
     @OptionalField(key: FieldKeys.v1.languagePriority) var languagePriority: Int?
-    
+
     init() { }
 }
 
@@ -88,33 +81,33 @@ extension MediaSummaryModel {
 extension MediaSummaryModel {
     struct Elasticsearch: ElasticModelInterface {
         typealias DatabaseModel = MediaSummaryModel
-        
+
         static var baseSchema = "media"
-        static var mappings: [String : Any] = [
+        static var mappings: [String: Any] = [
             "properties": [
                 "id": [
-                    "type": "keyword"
+                    "type": "keyword",
                 ],
                 "waypointId": [
-                    "type": "keyword"
+                    "type": "keyword",
                 ],
                 "detailId": [
-                    "type": "keyword"
+                    "type": "keyword",
                 ],
                 "title": [
                     "type": "text",
                     "fields": [
                         "keyword": [
-                            "type": "keyword"
+                            "type": "keyword",
                         ],
                         "suggest": [
                             "type": "completion",
-                            "analyzer": "default"
-                        ]
-                    ]
+                            "analyzer": "default",
+                        ],
+                    ],
                 ],
                 "slug": [
-                    "type": "keyword"
+                    "type": "keyword",
                 ],
                 "detailText": [
                     "type": "text",
@@ -123,70 +116,70 @@ extension MediaSummaryModel {
                     "type": "text",
                 ],
                 "detailUserId": [
-                    "type": "keyword"
+                    "type": "keyword",
                 ],
                 "detailVerifiedAt": [
-                    "type": "date"
+                    "type": "date",
                 ],
                 "detailCreatedAt": [
-                    "type": "date"
+                    "type": "date",
                 ],
                 "detailUpdatedAt": [
-                    "type": "date"
+                    "type": "date",
                 ],
                 "detailDeletedAt": [
-                    "type": "date"
+                    "type": "date",
                 ],
                 "fileId": [
-                    "type": "keyword"
+                    "type": "keyword",
                 ],
                 "relativeMediaFilePath": [
-                    "type": "keyword"
+                    "type": "keyword",
                 ],
                 "fileType": [
-                    "type": "keyword"
+                    "type": "keyword",
                 ],
                 "fileUserId": [
-                    "type": "keyword"
+                    "type": "keyword",
                 ],
                 "fileCreatedAt": [
-                    "type": "date"
+                    "type": "date",
                 ],
                 "fileUpdatedAt": [
-                    "type": "date"
+                    "type": "date",
                 ],
                 "fileDeletedAt": [
-                    "type": "date"
+                    "type": "date",
                 ],
                 "languageId": [
-                    "type": "keyword"
+                    "type": "keyword",
                 ],
                 "languageName": [
                     "type": "text",
                     "fields": [
                         "keyword": [
-                            "type": "keyword"
-                        ]
-                    ]
+                            "type": "keyword",
+                        ],
+                    ],
                 ],
                 "languageCode": [
-                    "type": "keyword"
+                    "type": "keyword",
                 ],
                 "languageIsRTL": [
-                    "type": "boolean"
+                    "type": "boolean",
                 ],
                 "languagePriority": [
-                    "type": "short"
+                    "type": "short",
                 ],
                 "tags": [
-                    "type": "keyword"
-                ]
-            ]
+                    "type": "keyword",
+                ],
+            ],
         ]
-        
+
         var id: UUID
         var waypointId: UUID
-        
+
         var detailId: UUID
         var title: String
         var slug: String
@@ -197,7 +190,7 @@ extension MediaSummaryModel {
         var detailCreatedAt: Date?
         var detailUpdatedAt: Date?
         var detailDeletedAt: Date?
-        
+
         var fileId: UUID
         var relativeMediaFilePath: String
         var fileType: Media.Detail.FileType
@@ -205,58 +198,58 @@ extension MediaSummaryModel {
         var fileCreatedAt: Date?
         var fileUpdatedAt: Date?
         var fileDeletedAt: Date?
-        
+
         var languageId: UUID
         var languageName: String
         var languageCode: String
         var languageIsRTL: Bool
         var languagePriority: Int?
-        
+
         var tags: [UUID]
-        
+
         /// The relative file path of the thumbnail.
         var relativeThumbnailFilePath: String? {
             if fileType == .audio { return nil }
             return MediaFileModel.relativeThumbnailFilePath(for: relativeMediaFilePath)
         }
     }
-    
+
     func toElasticsearch(on db: Database) async throws -> Elasticsearch {
         let tags = try await MediaTagModel
             .query(on: db)
-            .filter(\.$media.$id == self.requireID())
+            .filter(\.$media.$id == requireID())
             .field(\.$tag.$id)
             .all()
-            .map { $0.$tag.id }
-        return try self.toElasticsearch(tags: tags)
+            .map(\.$tag.id)
+        return try toElasticsearch(tags: tags)
     }
-    
+
     func toElasticsearch(tags: [UUID]) throws -> Elasticsearch {
         try Elasticsearch(
-            id: self.requireID(),
-            waypointId: self.waypointId,
-            detailId: self.detailId,
-            title: self.title,
-            slug: self.slug,
-            detailText: self.detailText,
-            source: self.source,
-            detailUserId: self.detailUserId,
-            detailVerifiedAt: self.detailVerifiedAt,
-            detailCreatedAt: self.detailCreatedAt,
-            detailUpdatedAt: self.detailUpdatedAt,
-            detailDeletedAt: self.detailDeletedAt,
-            fileId: self.fileId,
-            relativeMediaFilePath: self.relativeMediaFilePath,
-            fileType: self.fileType,
-            fileUserId: self.fileUserId,
-            fileCreatedAt: self.fileCreatedAt,
-            fileUpdatedAt: self.fileUpdatedAt,
-            fileDeletedAt: self.fileDeletedAt,
-            languageId: self.languageId,
-            languageName: self.languageName,
-            languageCode: self.languageCode,
-            languageIsRTL: self.languageIsRTL,
-            languagePriority: self.languagePriority,
+            id: requireID(),
+            waypointId: waypointId,
+            detailId: detailId,
+            title: title,
+            slug: slug,
+            detailText: detailText,
+            source: source,
+            detailUserId: detailUserId,
+            detailVerifiedAt: detailVerifiedAt,
+            detailCreatedAt: detailCreatedAt,
+            detailUpdatedAt: detailUpdatedAt,
+            detailDeletedAt: detailDeletedAt,
+            fileId: fileId,
+            relativeMediaFilePath: relativeMediaFilePath,
+            fileType: fileType,
+            fileUserId: fileUserId,
+            fileCreatedAt: fileCreatedAt,
+            fileUpdatedAt: fileUpdatedAt,
+            fileDeletedAt: fileDeletedAt,
+            languageId: languageId,
+            languageName: languageName,
+            languageCode: languageCode,
+            languageIsRTL: languageIsRTL,
+            languagePriority: languagePriority,
             tags: tags
         )
     }
@@ -276,7 +269,7 @@ extension MediaSummaryModel.Elasticsearch {
         let response = try await req.elastic.bulk(documents)
         return response
     }
-    
+
     @discardableResult
     static func deleteUser(_ userId: UUID, on req: Request) async throws -> ESBulkResponse? {
         let elementsToDelete = try await DatabaseModel
@@ -287,7 +280,7 @@ extension MediaSummaryModel.Elasticsearch {
                     .filter(\.$fileUserId == userId)
             }
             .all()
-        
+
         guard !elementsToDelete.isEmpty else { return nil }
         let documents = try await elementsToDelete
             .concurrentMap { element in
@@ -301,29 +294,29 @@ extension MediaSummaryModel.Elasticsearch {
                 return document
             }
             .map { (document: Self) in
-                return ESBulkOperation(operationType: .update, index: document.schema, id: document.id, document: document)
+                ESBulkOperation(operationType: .update, index: document.schema, id: document.id, document: document)
             }
         let response = try await req.elastic.bulk(documents)
         return response
     }
-    
+
     func getTagList(preferredLanguageCode: String?, on elastic: ElasticHandler) async throws -> [Tag.Detail.List] {
-        guard !self.tags.isEmpty else {
+        guard !tags.isEmpty else {
             return []
         }
-        
+
         var query: [String: Any] = [
             "query": [
                 "terms": [
-                    "id": self.tags.map(\.uuidString)
-                ]
+                    "id": tags.map(\.uuidString),
+                ],
             ],
             "collapse": [
-                "field": "id"
+                "field": "id",
             ],
         ]
         var sort: [[String: Any]] = []
-        if let preferredLanguageCode = preferredLanguageCode {
+        if let preferredLanguageCode {
             sort.append(
                 [
                     "_script": [
@@ -332,24 +325,24 @@ extension MediaSummaryModel.Elasticsearch {
                             "lang": "painless",
                             "source": "doc['languageCode'].value == params.preferredLanguageCode ? 0 : doc['languagePriority'].value",
                             "params": [
-                                "preferredLanguageCode": "\(preferredLanguageCode)"
-                            ]
+                                "preferredLanguageCode": "\(preferredLanguageCode)",
+                            ],
                         ],
-                        "order": "asc"
-                    ]
+                        "order": "asc",
+                    ],
                 ]
             )
         } else {
             sort.append(["languagePriority": "asc"])
         }
-        sort.append([ "title.keyword": "asc" ])
+        sort.append(["title.keyword": "asc"])
         query["sort"] = sort
-        
+
         return try await elastic.perform {
             let queryData = try JSONSerialization.data(withJSONObject: query)
             let responseData = try await elastic.custom("/\(LatestVerifiedTagModel.Elasticsearch.wildcardSchema)/_search", method: .GET, body: queryData)
             let response = try ElasticHandler.newJSONDecoder().decode(ESGetMultipleDocumentsResponse<LatestVerifiedTagModel.Elasticsearch>.self, from: responseData)
-            
+
             return response.hits.hits.map {
                 let source = $0.source
                 return .init(

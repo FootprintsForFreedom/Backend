@@ -1,10 +1,3 @@
-//
-//  ApiRepositoryVerificationController.swift
-//  
-//
-//  Created by niklhut on 26.05.22.
-//
-
 import Vapor
 
 /// Streamlines verifying repositories.

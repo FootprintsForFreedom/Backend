@@ -1,10 +1,3 @@
-//
-//  MediaRepository.swift
-//  
-//
-//  Created by niklhut on 17.05.22.
-//
-
 import Foundation
 import SwiftDiff
 
@@ -28,7 +21,7 @@ public extension Media.Repository {
         public let detailText: String
         /// The language code for the media title, description and source.
         public let languageCode: String
-        
+
         /// Creates a  list unverified media details object.
         /// - Parameters:
         ///   - detailId: Id uniquely identifying the media detail object.
@@ -44,7 +37,7 @@ public extension Media.Repository {
             self.languageCode = languageCode
         }
     }
-    
+
     /// Used to detail changes between two media objects.
     struct Changes: Codable {
         /// The differences between the titles of the detail objects.
@@ -61,7 +54,7 @@ public extension Media.Repository {
         public let fromUser: User.Account.Detail?
         /// The user who created the destination detail object.
         public let toUser: User.Account.Detail?
-        
+
         /// Creates a media changes object.
         /// - Parameters:
         ///   - titleDiff: The differences between the titles of the detail objects.

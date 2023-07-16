@@ -1,10 +1,3 @@
-//
-//  StatusModule.swift
-//  
-//
-//  Created by niklhut on 05.06.22.
-//
-
 import Vapor
 
 struct StatusModule: ModuleInterface {

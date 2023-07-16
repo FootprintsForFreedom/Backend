@@ -1,14 +1,7 @@
-//
-//  MediaApiPatchTests.swift
-//  
-//
-//  Created by niklhut on 16.05.22.
-//
-
-@testable import App
-import XCTVapor
 import Fluent
 import Spec
+import XCTVapor
+@testable import App
 
 extension Media.Detail.Patch: Content { }
 
@@ -32,7 +25,7 @@ final class MediaApiPatchTests: AppTestCase, MediaTest {
             waypointId: waypointId,
             languageId: languageId
         )
-        
+
         let patchContent = try Media.Detail.Patch(
             title: patchedTitle,
             detailText: patchedDetailText,
@@ -41,14 +34,14 @@ final class MediaApiPatchTests: AppTestCase, MediaTest {
         )
         return (repository, detail, file, patchContent)
     }
-    
+
     func testSuccessfulPatchMediaTitle() async throws {
         let token = try await getToken(for: .user, verified: true)
         let (repository, detail, file, patchContent) = try await getMediaPatchContent(patchedTitle: "The patched title", verified: true)
         try await detail.$language.load(on: app.db)
-        
+
         let query = try URLEncodedFormEncoder().encode(patchContent)
-        
+
         try app
             .describe("Patch media title should return ok")
             .patch(mediaPath.appending("\(repository.requireID().uuidString)/?\(query)"))
@@ -67,25 +60,25 @@ final class MediaApiPatchTests: AppTestCase, MediaTest {
                 XCTAssertEqual(content.filePath, file.relativeMediaFilePath)
             }
             .test()
-        
+
         // Test the new media model was created correctly
         let newMediaModel = try await repository.$details
             .query(on: app.db)
             .sort(\.$updatedAt, .descending)
             .first()!
-        
+
         XCTAssertNotNil(newMediaModel.id)
         XCTAssertNil(newMediaModel.verifiedAt)
     }
-    
+
     func testSuccessfulPatchMediaTitleWithDuplicateTitle() async throws {
         let token = try await getToken(for: .user, verified: true)
         let title = "My new title \(UUID())"
         let (repository, detail, file, patchContent) = try await getMediaPatchContent(title: title, patchedTitle: title, verified: true)
         try await detail.$language.load(on: app.db)
-        
+
         let query = try URLEncodedFormEncoder().encode(patchContent)
-        
+
         try app
             .describe("Patch media title should return ok")
             .patch(mediaPath.appending("\(repository.requireID().uuidString)/?\(query)"))
@@ -105,14 +98,14 @@ final class MediaApiPatchTests: AppTestCase, MediaTest {
             }
             .test()
     }
-    
+
     func testSuccessfulPatchMediaDetail() async throws {
         let token = try await getToken(for: .user, verified: true)
         let (repository, detail, file, patchContent) = try await getMediaPatchContent(patchedDetailText: "The patched detailText", verified: true)
         try await detail.$language.load(on: app.db)
-        
+
         let query = try URLEncodedFormEncoder().encode(patchContent)
-        
+
         try app
             .describe("Patch media title detailText return ok")
             .patch(mediaPath.appending("\(repository.requireID().uuidString)/?\(query)"))
@@ -131,24 +124,24 @@ final class MediaApiPatchTests: AppTestCase, MediaTest {
                 XCTAssertEqual(content.filePath, file.relativeMediaFilePath)
             }
             .test()
-        
+
         // Test the new media model was created correctly
         let newMediaModel = try await repository.$details
             .query(on: app.db)
             .sort(\.$updatedAt, .descending)
             .first()!
-        
+
         XCTAssertNotNil(newMediaModel.id)
         XCTAssertNil(newMediaModel.verifiedAt)
     }
-    
+
     func testSuccessfulPatchMediaSource() async throws {
         let token = try await getToken(for: .user, verified: true)
         let (repository, detail, file, patchContent) = try await getMediaPatchContent(patchedSource: "The patched source", verified: true)
         try await detail.$language.load(on: app.db)
-        
+
         let query = try URLEncodedFormEncoder().encode(patchContent)
-        
+
         try app
             .describe("Patch media source should return ok")
             .patch(mediaPath.appending("\(repository.requireID().uuidString)/?\(query)"))
@@ -167,29 +160,29 @@ final class MediaApiPatchTests: AppTestCase, MediaTest {
                 XCTAssertEqual(content.filePath, file.relativeMediaFilePath)
             }
             .test()
-        
+
         // Test the new media model was created correctly
         let newMediaModel = try await repository.$details
             .query(on: app.db)
             .sort(\.$updatedAt, .descending)
             .first()!
-        
+
         XCTAssertNotNil(newMediaModel.id)
         XCTAssertNil(newMediaModel.verifiedAt)
     }
-    
+
     func testSuccessfulPatchMediaFile() async throws {
         let token = try await getToken(for: .user, verified: true)
         let (repository, detail, file, patchContent) = try await getMediaPatchContent(verified: true)
         try await detail.$language.load(on: app.db)
-        
+
         let query = try URLEncodedFormEncoder().encode(patchContent)
         let newFile = FileUtils.testImage
-        
+
         try app
             .describe("Patch media file should return ok")
             .patch(mediaPath.appending("\(repository.requireID().uuidString)/?\(query)"))
-            .buffer(try FileUtils.data(for: newFile))
+            .buffer(FileUtils.data(for: newFile))
             .header("Content-Type", newFile.mimeType)
             .bearerToken(token)
             .expect(.ok)
@@ -206,23 +199,23 @@ final class MediaApiPatchTests: AppTestCase, MediaTest {
                 XCTAssertNotEqual(content.filePath, file.relativeMediaFilePath)
             }
             .test()
-        
+
         // Test the new media model was created correctly
         let newMediaModel = try await repository.$details
             .query(on: app.db)
             .sort(\.$updatedAt, .descending)
             .first()!
-        
+
         XCTAssertNotNil(newMediaModel.id)
         XCTAssertNil(newMediaModel.verifiedAt)
     }
-    
+
     func testEmptyPatchMediaFails() async throws {
         let token = try await getToken(for: .user, verified: true)
         let (repository, _, _, patchContent) = try await getMediaPatchContent(verified: true)
-        
+
         let query = try URLEncodedFormEncoder().encode(patchContent)
-        
+
         try app
             .describe("Patch media with empty payload should fail")
             .patch(mediaPath.appending("\(repository.requireID().uuidString)/?\(query)"))
@@ -230,13 +223,13 @@ final class MediaApiPatchTests: AppTestCase, MediaTest {
             .expect(.badRequest)
             .test()
     }
-    
+
     func testPatchMediaNeedsValidTitle() async throws {
         let token = try await getToken(for: .user, verified: true)
         let (repository, _, _, patchContent) = try await getMediaPatchContent(patchedTitle: "", verified: true)
-        
+
         let query = try URLEncodedFormEncoder().encode(patchContent)
-        
+
         try app
             .describe("Patch media title should need valid title or abort")
             .patch(mediaPath.appending("\(repository.requireID().uuidString)/?\(query)"))
@@ -244,13 +237,13 @@ final class MediaApiPatchTests: AppTestCase, MediaTest {
             .expect(.badRequest)
             .test()
     }
-    
+
     func testPatchMediaNeedsValidDetailText() async throws {
         let token = try await getToken(for: .user, verified: true)
         let (repository, _, _, patchContent) = try await getMediaPatchContent(patchedDetailText: "", verified: true)
-        
+
         let query = try URLEncodedFormEncoder().encode(patchContent)
-        
+
         try app
             .describe("Patch media title should need valid detailText or abort")
             .patch(mediaPath.appending("\(repository.requireID().uuidString)/?\(query)"))
@@ -258,13 +251,13 @@ final class MediaApiPatchTests: AppTestCase, MediaTest {
             .expect(.badRequest)
             .test()
     }
-    
+
     func testPatchMediaNeedsValidSource() async throws {
         let token = try await getToken(for: .user, verified: true)
         let (repository, _, _, patchContent) = try await getMediaPatchContent(patchedSource: "", verified: true)
-        
+
         let query = try URLEncodedFormEncoder().encode(patchContent)
-        
+
         try app
             .describe("Patch media title should need valid source or abort")
             .patch(mediaPath.appending("\(repository.requireID().uuidString)/?\(query)"))
@@ -272,30 +265,30 @@ final class MediaApiPatchTests: AppTestCase, MediaTest {
             .expect(.badRequest)
             .test()
     }
-    
+
     func testPatchMediaNeedsRequiredContentType() async throws {
         let token = try await getToken(for: .user, verified: true)
         let (repository, _, _, patchContent) = try await getMediaPatchContent(verified: true)
-        
+
         let query = try URLEncodedFormEncoder().encode(patchContent)
         let file = FileUtils.testFile(excludedFileType: repository.requiredFileType)
-        
+
         try app
             .describe("Update media should return ok")
             .put(mediaPath.appending("\(repository.requireID().uuidString)/?\(query)"))
-            .buffer(try FileUtils.data(for: file))
+            .buffer(FileUtils.data(for: file))
             .bearerToken(token)
             .expect(.badRequest)
             .test()
     }
-    
+
     func testPatchMediaNeedsValidIdForMediaDetailToPatch() async throws {
         let token = try await getToken(for: .user, verified: true)
         let (repository, _, _, _) = try await getMediaPatchContent(verified: true)
         let patchContent = Media.Detail.Patch(title: nil, detailText: nil, source: nil, idForMediaDetailToPatch: UUID())
-        
+
         let query = try URLEncodedFormEncoder().encode(patchContent)
-        
+
         try app
             .describe("Patch media should need valid id for media to patch or abort")
             .patch(mediaPath.appending("\(repository.requireID().uuidString)/?\(query)"))
@@ -303,30 +296,30 @@ final class MediaApiPatchTests: AppTestCase, MediaTest {
             .expect(.badRequest)
             .test()
     }
-    
+
     func testPatchMediaFileNeedsValidContentType() async throws {
         let token = try await getToken(for: .user, verified: true)
         let (repository, _, _, patchContent) = try await getMediaPatchContent(verified: true)
-        
+
         let query = try URLEncodedFormEncoder().encode(patchContent)
         let file = FileUtils.testImage
-        
+
         try app
             .describe("Patch media should need valid content type or abort")
             .patch(mediaPath.appending("\(repository.requireID().uuidString)/?\(query)"))
-            .buffer(try FileUtils.data(for: file))
+            .buffer(FileUtils.data(for: file))
             .header("Content-Type", "hallo/test")
             .bearerToken(token)
             .expect(.badRequest)
             .test()
     }
-    
+
     func testPatchMediaAsUnverifiedUserFails() async throws {
         let token = try await getToken(for: .user, verified: false)
         let (repository, _, _, patchContent) = try await getMediaPatchContent(patchedSource: "Another source", verified: true)
-        
+
         let query = try URLEncodedFormEncoder().encode(patchContent)
-        
+
         try app
             .describe("Patch media as unverified user should fail")
             .patch(mediaPath.appending("\(repository.requireID().uuidString)/?\(query)"))
@@ -334,12 +327,12 @@ final class MediaApiPatchTests: AppTestCase, MediaTest {
             .expect(.forbidden)
             .test()
     }
-    
+
     func testPatchMediaWithoutTokenFails() async throws {
         let (repository, _, _, patchContent) = try await getMediaPatchContent(patchedTitle: "My new Title", verified: true)
-        
+
         let query = try URLEncodedFormEncoder().encode(patchContent)
-        
+
         try app
             .describe("Patch media wihtout token should fail")
             .patch(mediaPath.appending("\(repository.requireID().uuidString)/?\(query)"))

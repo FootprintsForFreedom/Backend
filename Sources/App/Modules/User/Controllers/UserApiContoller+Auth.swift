@@ -1,14 +1,7 @@
-//
-//  UserApiController+Auth.swift
-//  
-//
-//  Created by niklhut on 04.02.22.
-//
-
-import Vapor
 import AppApi
+import Vapor
 
-extension User.Token.Detail: Content {}
+extension User.Token.Detail: Content { }
 
 extension UserApiController {
     func signInApi(req: Request) async throws -> User.Token.Detail {
@@ -25,9 +18,9 @@ extension UserApiController {
         let userDetail = User.Account.Detail.ownDetail(id: user.id!, name: user.name, email: user.email, school: user.school, verified: user.verified, role: user.role)
         return User.Token.Detail(id: token.id!, access_token: token.value, user: userDetail)
     }
-    
+
     // TODO: problem when singing out in web app would be logged out as well
-    
+
     func signOutApi(req: Request) async throws -> HTTPStatus {
         /// Require user to be signed in
         let authenticatedUser = try req.auth.require(AuthenticatedUser.self)
@@ -42,16 +35,15 @@ extension UserApiController {
         /// return ok if user was signed out successfully
         return .ok
     }
-    
+
     func setupAuthRoutes(_ routes: RoutesBuilder) {
         routes
             .grouped(UserCredentialsAuthenticator())
             .grouped(UserBasicAuthenticator())
             .post("sign-in", use: signInApi)
-        
+
         routes
             .grouped(AuthenticatedUser.guardMiddleware())
             .post("sign-out", use: signOutApi)
-
     }
 }

@@ -1,10 +1,3 @@
-//
-//  MediaDetail.swift
-//  
-//
-//  Created by niklhut on 09.05.22.
-//
-
 import Foundation
 
 public extension Media {
@@ -27,7 +20,7 @@ public extension Media.Detail {
         public let fileType: FileType
         /// The relative path at which to find the thumbnail file.
         public let thumbnailFilePath: String?
-        
+
         /// Creates a media list object.
         /// - Parameters:
         ///   - id: Id uniquely identifying the media repository.
@@ -43,7 +36,7 @@ public extension Media.Detail {
             self.thumbnailFilePath = thumbnailFilePath
         }
     }
-    
+
     /// Used to detail media objects.
     struct Detail: Codable {
         /// Id uniquely identifying the media repository.
@@ -96,7 +89,7 @@ public extension Media.Detail {
             self.detailId = detailId
         }
     }
-    
+
     /// Used to create media objects.
     struct Create: Codable {
         /// The media title.
@@ -109,7 +102,7 @@ public extension Media.Detail {
         public let languageCode: String
         /// The id for the waypoint to which the media belongs.
         public let waypointId: UUID
-        
+
         /// Creates a media create object.
         /// - Parameters:
         ///   - title: The media title.
@@ -125,7 +118,7 @@ public extension Media.Detail {
             self.waypointId = waypointId
         }
     }
-    
+
     /// Used to update media objects.
     struct Update: Codable {
         /// The media title.
@@ -138,7 +131,7 @@ public extension Media.Detail {
         public let languageCode: String
         /// The id of an existing media. The updated media will have the same file as this media.
         public let mediaIdForFile: UUID?
-        
+
         /// Creates a media update object.
         /// - Parameters:
         ///   - title: The media title.
@@ -154,7 +147,7 @@ public extension Media.Detail {
             self.mediaIdForFile = mediaIdForFile
         }
     }
-    
+
     /// Used to patch media objects.
     struct Patch: Codable {
         /// The media title.
@@ -165,7 +158,7 @@ public extension Media.Detail {
         public let source: String?
         /// The id of an existing media. All parameters not set in this request will be taken from this media.
         public let idForMediaDetailToPatch: UUID
-        
+
         /// Creates a media patch object.
         /// - Parameters:
         ///   - title: The media title.

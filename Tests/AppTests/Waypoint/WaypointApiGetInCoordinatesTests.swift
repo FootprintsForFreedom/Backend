@@ -1,31 +1,24 @@
-//
-//  WaypointApiGetInCoordinatesTests.swift
-//  
-//
-//  Created by niklhut on 13.06.22.
-//
-
-@testable import App
-import XCTVapor
 import Fluent
 import Spec
+import XCTVapor
+@testable import App
 
 final class WaypointApiGetInCoordinatesTests: AppTestCase, WaypointTest {
     func testSuccessfulGetWaypointsInCoordinates() async throws {
         let waypoint = try await createNewWaypoint(verified: true)
-        
+
         let getInRangeContent = Waypoint.Request.ListInArea(
             topLeftLatitude: waypoint.location.latitude + 1,
             topLeftLongitude: waypoint.location.longitude - 1,
             bottomRightLatitude: waypoint.location.latitude - 1,
             bottomRightLongitude: waypoint.location.longitude + 1
         )
-        
+
         let query = try URLEncodedFormEncoder().encode(getInRangeContent)
         let waypointCount = try await WaypointRepositoryModel.query(on: app.db).count()
-        
+
         try await Task.sleep(for: .seconds(1))
-        
+
         try app
             .describe("Successful get waypoints in coordinate range should return all waypoints in this coordinate range")
             .get(waypointsPath.appending("in/?\(query)&per=\(waypointCount)"))
@@ -36,23 +29,23 @@ final class WaypointApiGetInCoordinatesTests: AppTestCase, WaypointTest {
             }
             .test()
     }
-    
+
     func testSuccessfulGetWaypointsInCoordinatesDoesNotReturnUnverifiedLocation() async throws {
         let waypoint = try await createNewWaypoint()
         waypoint.detail.verifiedAt = Date()
         try await waypoint.detail.update(on: app.db)
-        
+
         let getInRangeContent = Waypoint.Request.ListInArea(
             topLeftLatitude: waypoint.location.latitude + 1,
             topLeftLongitude: waypoint.location.longitude - 1,
             bottomRightLatitude: waypoint.location.latitude - 1,
             bottomRightLongitude: waypoint.location.longitude + 1
         )
-        
+
         let query = try URLEncodedFormEncoder().encode(getInRangeContent)
-        
+
         try await Task.sleep(for: .seconds(1))
-        
+
         try app
             .describe("Successful get waypoints in coordinate range should return all waypoints in this coordinate range")
             .get(waypointsPath.appending("in/?\(query)"))
@@ -63,23 +56,23 @@ final class WaypointApiGetInCoordinatesTests: AppTestCase, WaypointTest {
             }
             .test()
     }
-    
+
     func testSuccessfulGetWaypointsInCoordinatesDoesNotReturnUnverifiedDetail() async throws {
         let waypoint = try await createNewWaypoint()
         waypoint.location.verifiedAt = Date()
         try await waypoint.detail.update(on: app.db)
-        
+
         let getInRangeContent = Waypoint.Request.ListInArea(
             topLeftLatitude: waypoint.location.latitude + 1,
             topLeftLongitude: waypoint.location.longitude - 1,
             bottomRightLatitude: waypoint.location.latitude - 1,
             bottomRightLongitude: waypoint.location.longitude + 1
         )
-        
+
         let query = try URLEncodedFormEncoder().encode(getInRangeContent)
-        
+
         try await Task.sleep(for: .seconds(1))
-        
+
         try app
             .describe("Successful get waypoints in coordinate range should return all waypoints in this coordinate range")
             .get(waypointsPath.appending("in/?\(query)"))

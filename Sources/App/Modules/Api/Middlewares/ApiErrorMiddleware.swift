@@ -1,19 +1,10 @@
-//
-//  ApiErrorMiddleware.swift
-//  
-//
-//  Created by niklhut on 01.02.22.
-//
-
 import Vapor
 
 struct ApiErrorMiddleware: AsyncMiddleware {
-
     func respond(to req: Request, chainingTo next: AsyncResponder) async throws -> Response {
         do {
             return try await next.respond(to: req)
-        }
-        catch {
+        } catch {
             let status: HTTPResponseStatus
             let headers: HTTPHeaders
             let message: String?
@@ -44,8 +35,7 @@ struct ApiErrorMiddleware: AsyncMiddleware {
             do {
                 response.body = try .init(data: JSONEncoder().encode(ValidationError(message: message, details: details)))
                 response.headers.replaceOrAdd(name: .contentType, value: "application/json; charset=utf-8")
-            }
-            catch {
+            } catch {
                 response.body = .init(string: "Oops: \(error)")
                 response.headers.replaceOrAdd(name: .contentType, value: "text/plain; charset=utf-8")
             }

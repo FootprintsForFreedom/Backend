@@ -1,10 +1,3 @@
-//
-//  Array+Inserting.swift
-//  
-//
-//  Created by niklhut on 03.03.22.
-//
-
 extension Array {
     /// Inserts a new element into an array at a specified position without modifying the array itself.
     ///
@@ -21,7 +14,7 @@ extension Array {
         arrray.insert(newElement, at: index)
         return arrray
     }
-    
+
     /// Inserts a new element into an array at a specified position without modifying the array itself.
     ///
     /// The new element is inserted before the element currently at the specified index. If you pass the array’s endIndex property as the index parameter, the new element is appended to the array
@@ -33,8 +26,8 @@ extension Array {
     ///   - index: The position at which to insert the new element. index must be a valid index of the array or equal to its endIndex property.
     /// - Returns: The changed array
     func inserting(_ newElement: Element?, at index: Int) -> [Element] {
-        if let newElement = newElement {
-            return self.inserting(newElement, at: index)
+        if let newElement {
+            return inserting(newElement, at: index)
         } else {
             return self
         }

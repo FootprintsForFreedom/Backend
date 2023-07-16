@@ -1,12 +1,5 @@
-//
-//  Slugable.swift
-//  
-//
-//  Created by niklhut on 08.06.22.
-//
-
-import Vapor
 import Fluent
+import Vapor
 
 /// Represents an object that has an unique slug identifier.
 public protocol Slugable where Self: Fluent.Model {
@@ -49,6 +42,6 @@ extension Slugable where Self: Titled, Self: Timestamped {
     ///   - db: The database on which to check if the slug already exists.
     /// - Returns: The generated slug for the model.
     func generateSlug(with accuracy: Date.Accuracy = .none, on db: Database) async throws -> String {
-        try await generateSlug(for: self.title, self.createdAt, with: accuracy, on: db)
+        try await generateSlug(for: title, createdAt, with: accuracy, on: db)
     }
 }

@@ -1,10 +1,3 @@
-//
-//  User+Verification.swift
-//  
-//
-//  Created by niklhut on 06.07.22.
-//
-
 import Vapor
 
 extension UserAccountModel {
@@ -23,7 +16,7 @@ extension UserAccountModel {
         let verificationToken = try generateVerificationToken()
         try await verificationToken.create(on: req.db)
     }
-    
+
     /// Verifies a user token.
     /// - Parameters:
     ///   - req: The request on which to verify the token.
@@ -32,7 +25,7 @@ extension UserAccountModel {
     func verifyToken(_ req: Request, _ inputToken: String) async throws {
         try await $verificationToken.load(on: req.db)
         /// confirm a token is saved for the user
-        guard let verificationToken = verificationToken else {
+        guard let verificationToken else {
             throw Abort(.unauthorized)
         }
         /// confirm the token is not older than 24 hours
@@ -45,4 +38,3 @@ extension UserAccountModel {
         }
     }
 }
-

@@ -1,16 +1,9 @@
-//
-//  UserApiCreateTests.swift
-//  
-//
-//  Created by niklhut on 23.05.20.
-//
-
-@testable import App
-import XCTVapor
 import Fluent
 import Spec
+import XCTVapor
+@testable import App
 
-extension User.Account.Create: Content {}
+extension User.Account.Create: Content { }
 
 final class UserApiCreateTests: AppTestCase, UserTest {
     private func getUserCreateContent(
@@ -20,16 +13,16 @@ final class UserApiCreateTests: AppTestCase, UserTest {
         password: String = "new3Password"
     ) throws -> User.Account.Create {
         let user = User.Account.Create(name: name, email: email, school: school, password: password)
-        
+
         return user
     }
-    
+
     func testSuccessfulCreateUser() async throws {
         let newUser = try getUserCreateContent()
-        
+
         // Get original user count
         let userCount = try await UserAccountModel.query(on: app.db).count()
-        
+
         try app
             .describe("Create user should return ok")
             .post(usersPath)
@@ -43,17 +36,17 @@ final class UserApiCreateTests: AppTestCase, UserTest {
                 XCTAssertEqual(content.school, newUser.school)
                 XCTAssertEqual(content.verified, false)
                 XCTAssertEqual(content.role, .user)
-        }
-        .test()
-        
+            }
+            .test()
+
         // New user count should be one more than original user count
         let newUserCount = try await UserAccountModel.query(on: app.db).count()
         XCTAssertEqual(newUserCount, userCount + 1)
     }
-    
+
     func testNewPasswordNeedsAtLeastSixCharacters() async throws {
         let newUser = try getUserCreateContent(password: "1aB")
-        
+
         try app
             .describe("New user password needs at least six characters; Update password fails")
             .post(usersPath)
@@ -61,7 +54,7 @@ final class UserApiCreateTests: AppTestCase, UserTest {
             .expect(.badRequest)
             .test()
     }
-    
+
     func testNewPasswordNeedsUppercasedLetter() async throws {
         let password = "1newpassword"
         let newUser = try getUserCreateContent(password: password)
@@ -73,11 +66,11 @@ final class UserApiCreateTests: AppTestCase, UserTest {
             .expect(.badRequest)
             .test()
     }
-    
+
     func testNewPasswordNeedsLowercasedLetter() async throws {
         let password = "1NEWPASSWORD"
         let newUser = try getUserCreateContent(password: password)
-        
+
         try app
             .describe("New user password needs at least one lowercased letter; Update password fails")
             .post(usersPath)
@@ -85,11 +78,11 @@ final class UserApiCreateTests: AppTestCase, UserTest {
             .expect(.badRequest)
             .test()
     }
-    
+
     func testNewPasswordNeedsDigit() async throws {
         let password = "newPassword"
         let newUser = try getUserCreateContent(password: password)
-        
+
         try app
             .describe("New user password needs at least one digit; Update password fails")
             .post(usersPath)
@@ -97,11 +90,11 @@ final class UserApiCreateTests: AppTestCase, UserTest {
             .expect(.badRequest)
             .test()
     }
-    
+
     func testNewPasswordWihtNewLineFails() async throws {
         let password = "1new\nPassword"
         let newUser = try getUserCreateContent(password: password)
-        
+
         try app
             .describe("New user password must not contain new line; Update password fails")
             .post(usersPath)
@@ -109,7 +102,7 @@ final class UserApiCreateTests: AppTestCase, UserTest {
             .expect(.badRequest)
             .test()
     }
-    
+
     func testCreateUserNeedsValidName() throws {
         let newUser = try getUserCreateContent(name: "")
 
@@ -164,5 +157,4 @@ final class UserApiCreateTests: AppTestCase, UserTest {
             .expect(.badRequest)
             .test()
     }
-    
 }

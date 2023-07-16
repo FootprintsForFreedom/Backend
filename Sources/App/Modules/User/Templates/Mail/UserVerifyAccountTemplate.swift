@@ -1,13 +1,6 @@
-//
-//  UserVerifyAccountTemplate.swift
-//
-//
-//  Created by niklhut on 02.02.22.
-//
-
-import Vapor
 import SwiftSMTPVapor
+import Vapor
 
 struct UserVerifyAccountTemplate: MailTemplateRepresentable {
-    static var staticContentSlug: String { StaticContentMigrations.seed.verifyAccountSlug }    
+    static var staticContentSlug: String { StaticContentMigrations.seed.verifyAccountSlug }
 }

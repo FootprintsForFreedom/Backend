@@ -1,14 +1,7 @@
-//
-//  MediaApiCreateReportTests.swift
-//  
-//
-//  Created by niklhut on 08.06.22.
-//
-
-@testable import App
-import XCTVapor
 import Fluent
 import Spec
+import XCTVapor
+@testable import App
 
 final class MediaApiCreateReportTests: AppTestCase, MediaTest {
     func getMediaReportCreateContent(
@@ -16,15 +9,15 @@ final class MediaApiCreateReportTests: AppTestCase, MediaTest {
         reason: String = "Just because",
         visibleDetailId: UUID
     ) -> Report.Create {
-        return .init(title: title, reason: reason, visibleDetailId: visibleDetailId)
+        .init(title: title, reason: reason, visibleDetailId: visibleDetailId)
     }
-    
+
     func testSuccessfulCreateReport() async throws {
         let token = try await getToken(for: .user, verified: true)
         let media = try await createNewMedia()
-        let newReport = getMediaReportCreateContent(visibleDetailId: try media.detail.requireID())
+        let newReport = try getMediaReportCreateContent(visibleDetailId: media.detail.requireID())
         try await media.detail.$language.load(on: app.db)
-        
+
         try app
             .describe("Create new report as verified user should return ok")
             .post(mediaPath.appending("\(media.repository.requireID())/reports"))
@@ -50,13 +43,13 @@ final class MediaApiCreateReportTests: AppTestCase, MediaTest {
             }
             .test()
     }
-    
+
     func testCreateReportAsUnverifiedUserFails() async throws {
         let token = try await getToken(for: .user, verified: false)
         let media = try await createNewMedia()
-        let newReport = getMediaReportCreateContent(visibleDetailId: try media.detail.requireID())
+        let newReport = try getMediaReportCreateContent(visibleDetailId: media.detail.requireID())
         try await media.detail.$language.load(on: app.db)
-        
+
         try app
             .describe("Create new report as unverified user should fail")
             .post(mediaPath.appending("\(media.repository.requireID())/reports"))
@@ -65,12 +58,12 @@ final class MediaApiCreateReportTests: AppTestCase, MediaTest {
             .expect(.forbidden)
             .test()
     }
-    
+
     func testCreateReportWithoutTokenFails() async throws {
         let media = try await createNewMedia()
-        let newReport = getMediaReportCreateContent(visibleDetailId: try media.detail.requireID())
+        let newReport = try getMediaReportCreateContent(visibleDetailId: media.detail.requireID())
         try await media.detail.$language.load(on: app.db)
-        
+
         try app
             .describe("Create new report without token should fail")
             .post(mediaPath.appending("\(media.repository.requireID())/reports"))
@@ -78,13 +71,13 @@ final class MediaApiCreateReportTests: AppTestCase, MediaTest {
             .expect(.unauthorized)
             .test()
     }
-    
+
     func testCreateReportNeedsValidTitle() async throws {
         let token = try await getToken(for: .user, verified: true)
         let media = try await createNewMedia()
-        let newReport = getMediaReportCreateContent(title: "", visibleDetailId: try media.detail.requireID())
+        let newReport = try getMediaReportCreateContent(title: "", visibleDetailId: media.detail.requireID())
         try await media.detail.$language.load(on: app.db)
-        
+
         try app
             .describe("Create new report should require valid title and fail")
             .post(mediaPath.appending("\(media.repository.requireID())/reports"))
@@ -93,13 +86,13 @@ final class MediaApiCreateReportTests: AppTestCase, MediaTest {
             .expect(.badRequest)
             .test()
     }
-    
+
     func testCreateReportNeedsValidReason() async throws {
         let token = try await getToken(for: .user, verified: true)
         let media = try await createNewMedia()
-        let newReport = getMediaReportCreateContent(reason: "", visibleDetailId: try media.detail.requireID())
+        let newReport = try getMediaReportCreateContent(reason: "", visibleDetailId: media.detail.requireID())
         try await media.detail.$language.load(on: app.db)
-        
+
         try app
             .describe("Create new report should require valid reason and fail")
             .post(mediaPath.appending("\(media.repository.requireID())/reports"))
@@ -108,14 +101,14 @@ final class MediaApiCreateReportTests: AppTestCase, MediaTest {
             .expect(.badRequest)
             .test()
     }
-    
+
     func testCreateReportNeedsValidVisibleDetailId() async throws {
         let token = try await getToken(for: .user, verified: true)
         let media = try await createNewMedia()
         let media2 = try await createNewMedia()
-        let newReport = getMediaReportCreateContent(visibleDetailId: try media.detail.requireID())
+        let newReport = try getMediaReportCreateContent(visibleDetailId: media.detail.requireID())
         try await media.detail.$language.load(on: app.db)
-        
+
         try app
             .describe("Create new report should require valid visible detail id and fail")
             .post(mediaPath.appending("\(media2.repository.requireID())/reports"))

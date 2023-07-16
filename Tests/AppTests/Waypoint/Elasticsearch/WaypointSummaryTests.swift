@@ -1,22 +1,15 @@
-//
-//  WaypointSummaryTests.swift
-//  
-//
-//  Created by niklhut on 16.09.22.
-//
-
-@testable import App
-import XCTVapor
+import ElasticsearchNIOClient
 import Fluent
 import Spec
-import ElasticsearchNIOClient
+import XCTVapor
+@testable import App
 
 final class WaypointSummaryTests: AppTestCase, WaypointTest, TagTest, UserTest {
     func testVerifyDetailAddsWaypointToElasticsearch() async throws {
         let moderatorToken = try await getToken(for: .moderator)
         let (repository, detail, location) = try await createNewWaypoint()
         try await detail.$language.load(on: app.db)
-        
+
         let tag = try await createNewTag()
         try await repository.$tags.attach(tag.repository, method: .ifNotExists, on: app.db)
         let tagPivot = try await repository.$tags.$pivots.query(on: app.db)
@@ -25,7 +18,7 @@ final class WaypointSummaryTests: AppTestCase, WaypointTest, TagTest, UserTest {
             .first()!
         tagPivot.status = .verified
         try await tagPivot.save(on: app.db)
-        
+
         try app
             .describe("Verify location as moderator should be successful and return ok")
             .post(waypointsPath.appending("\(repository.requireID())/locations/verify/\(location.requireID())"))
@@ -33,7 +26,7 @@ final class WaypointSummaryTests: AppTestCase, WaypointTest, TagTest, UserTest {
             .expect(.ok)
             .expect(.json)
             .test()
-        
+
         try app
             .describe("Verify waypoint as moderator should be successful and return ok")
             .post(waypointsPath.appending("\(repository.requireID())/waypoints/verify/\(detail.requireID())"))
@@ -41,7 +34,7 @@ final class WaypointSummaryTests: AppTestCase, WaypointTest, TagTest, UserTest {
             .expect(.ok)
             .expect(.json)
             .test()
-        
+
         let elasticResponse = try await app.elastic.get(document: WaypointSummaryModel.Elasticsearch.self, id: repository.requireID().uuidString, from: WaypointSummaryModel.Elasticsearch.schema(for: detail.language.languageCode))
         let content = elasticResponse.source
         XCTAssertEqual(content.id, repository.id)
@@ -54,12 +47,12 @@ final class WaypointSummaryTests: AppTestCase, WaypointTest, TagTest, UserTest {
         XCTAssertEqual(content.location.lon, location.longitude)
         XCTAssert(try content.tags.contains(tag.repository.requireID()))
     }
-    
+
     func testVerifyLocationAddsOrUpdatesWaypointsToElasticsearch() async throws {
         let moderatorToken = try await getToken(for: .moderator)
         let (repository, detail, location) = try await createNewWaypoint()
         try await detail.$language.load(on: app.db)
-        
+
         let tag = try await createNewTag()
         try await repository.$tags.attach(tag.repository, method: .ifNotExists, on: app.db)
         let tagPivot = try await repository.$tags.$pivots.query(on: app.db)
@@ -68,7 +61,7 @@ final class WaypointSummaryTests: AppTestCase, WaypointTest, TagTest, UserTest {
             .first()!
         tagPivot.status = .verified
         try await tagPivot.save(on: app.db)
-        
+
         try app
             .describe("Verify waypoint as moderator should be successful and return ok")
             .post(waypointsPath.appending("\(repository.requireID())/waypoints/verify/\(detail.requireID())"))
@@ -76,11 +69,11 @@ final class WaypointSummaryTests: AppTestCase, WaypointTest, TagTest, UserTest {
             .expect(.ok)
             .expect(.json)
             .test()
-        
+
         let newLanguage = try await createLanguage()
         let newDetail = try await detail.updateWith(languageId: newLanguage.requireID(), on: app.db)
         try await newDetail.$language.load(on: app.db)
-        
+
         try app
             .describe("Verify waypoint as moderator should be successful and return ok")
             .post(waypointsPath.appending("\(repository.requireID())/waypoints/verify/\(newDetail.requireID())"))
@@ -88,7 +81,7 @@ final class WaypointSummaryTests: AppTestCase, WaypointTest, TagTest, UserTest {
             .expect(.ok)
             .expect(.json)
             .test()
-        
+
         try app
             .describe("Verify location as moderator should be successful and return ok")
             .post(waypointsPath.appending("\(repository.requireID())/locations/verify/\(location.requireID())"))
@@ -133,7 +126,7 @@ final class WaypointSummaryTests: AppTestCase, WaypointTest, TagTest, UserTest {
             .expect(.ok)
             .expect(.json)
             .test()
-        
+
         let elasticResponseAfterUpdateLocation = try await app.elastic.get(document: WaypointSummaryModel.Elasticsearch.self, id: repository.requireID().uuidString, from: WaypointSummaryModel.Elasticsearch.schema(for: detail.language.languageCode))
         let contentAfterUpdateLocation = elasticResponseAfterUpdateLocation.source
         XCTAssertEqual(contentAfterUpdateLocation.id, repository.id)
@@ -159,14 +152,14 @@ final class WaypointSummaryTests: AppTestCase, WaypointTest, TagTest, UserTest {
         XCTAssertEqual(secondContentAfterUpdateLocation.location.lon, newLocation.longitude)
         XCTAssert(try secondContentAfterUpdateLocation.tags.contains(tag.repository.requireID()))
     }
-    
+
     // TODO: tags...
-    
+
     func testVerifyWaypointTagUpdatesWaypointsInElasticsearch() async throws {
         let moderatorToken = try await getToken(for: .moderator)
         let (repository, detail, location) = try await createNewWaypoint()
         try await detail.$language.load(on: app.db)
-        
+
         try app
             .describe("Verify location as moderator should be successful and return ok")
             .post(waypointsPath.appending("\(repository.requireID())/locations/verify/\(location.requireID())"))
@@ -174,7 +167,7 @@ final class WaypointSummaryTests: AppTestCase, WaypointTest, TagTest, UserTest {
             .expect(.ok)
             .expect(.json)
             .test()
-        
+
         try app
             .describe("Verify waypoint as moderator should be successful and return ok")
             .post(waypointsPath.appending("\(repository.requireID())/waypoints/verify/\(detail.requireID())"))
@@ -182,10 +175,10 @@ final class WaypointSummaryTests: AppTestCase, WaypointTest, TagTest, UserTest {
             .expect(.ok)
             .expect(.json)
             .test()
-        
+
         let tag = try await createNewTag()
         try await repository.$tags.attach(tag.repository, method: .ifNotExists, on: app.db)
-        
+
         try app
             .describe("Verify tag on waypoint should return ok and the waypoint with the tag")
             .post(waypointsPath.appending("\(repository.requireID())/tags/verify/\(tag.repository.requireID())"))
@@ -193,7 +186,7 @@ final class WaypointSummaryTests: AppTestCase, WaypointTest, TagTest, UserTest {
             .expect(.ok)
             .expect(.json)
             .test()
-        
+
         let elasticResponse = try await app.elastic.get(document: WaypointSummaryModel.Elasticsearch.self, id: repository.requireID().uuidString, from: WaypointSummaryModel.Elasticsearch.schema(for: detail.language.languageCode))
         let content = elasticResponse.source
         XCTAssertEqual(content.id, repository.id)
@@ -206,11 +199,11 @@ final class WaypointSummaryTests: AppTestCase, WaypointTest, TagTest, UserTest {
         XCTAssertEqual(content.location.lon, location.longitude)
         XCTAssert(try content.tags.contains(tag.repository.requireID()))
     }
-    
+
     func testVerifyDetailRemovesOlderVerifiedWaypointsFromElasticsearch() async throws {
         let moderatorToken = try await getToken(for: .moderator)
         let (repository, detail, location) = try await createNewWaypoint()
-        
+
         let tag = try await createNewTag()
         try await repository.$tags.attach(tag.repository, method: .ifNotExists, on: app.db)
         let tagPivot = try await repository.$tags.$pivots.query(on: app.db)
@@ -219,7 +212,7 @@ final class WaypointSummaryTests: AppTestCase, WaypointTest, TagTest, UserTest {
             .first()!
         tagPivot.status = .verified
         try await tagPivot.save(on: app.db)
-        
+
         try app
             .describe("Verify location as moderator should be successful and return ok")
             .post(waypointsPath.appending("\(repository.requireID())/locations/verify/\(location.requireID())"))
@@ -227,7 +220,7 @@ final class WaypointSummaryTests: AppTestCase, WaypointTest, TagTest, UserTest {
             .expect(.ok)
             .expect(.json)
             .test()
-        
+
         try app
             .describe("Verify waypoint as moderator should be successful and return ok")
             .post(waypointsPath.appending("\(repository.requireID())/waypoints/verify/\(detail.requireID())"))
@@ -235,10 +228,10 @@ final class WaypointSummaryTests: AppTestCase, WaypointTest, TagTest, UserTest {
             .expect(.ok)
             .expect(.json)
             .test()
-        
+
         let newDetail = try await detail.updateWith(on: app.db)
         try await newDetail.$language.load(on: app.db)
-        
+
         try app
             .describe("Verify waypoint as moderator should be successful and return ok")
             .post(waypointsPath.appending("\(repository.requireID())/waypoints/verify/\(newDetail.requireID())"))
@@ -246,8 +239,7 @@ final class WaypointSummaryTests: AppTestCase, WaypointTest, TagTest, UserTest {
             .expect(.ok)
             .expect(.json)
             .test()
-        
-        
+
         let elasticResponse = try await app.elastic.get(document: WaypointSummaryModel.Elasticsearch.self, id: repository.requireID().uuidString, from: WaypointSummaryModel.Elasticsearch.schema(for: newDetail.language.languageCode))
         let content = elasticResponse.source
         XCTAssertEqual(content.id, repository.id)
@@ -261,12 +253,12 @@ final class WaypointSummaryTests: AppTestCase, WaypointTest, TagTest, UserTest {
         XCTAssertEqual(content.location.lon, location.longitude)
         XCTAssert(try content.tags.contains(tag.repository.requireID()))
     }
-    
+
     func testVerifyDetailInDifferentLanguageAddsWaypointToElasticsearch() async throws {
         let moderatorToken = try await getToken(for: .moderator)
         let (repository, detail, location) = try await createNewWaypoint()
         try await detail.$language.load(on: app.db)
-        
+
         let tag = try await createNewTag()
         try await repository.$tags.attach(tag.repository, method: .ifNotExists, on: app.db)
         let tagPivot = try await repository.$tags.$pivots.query(on: app.db)
@@ -275,7 +267,7 @@ final class WaypointSummaryTests: AppTestCase, WaypointTest, TagTest, UserTest {
             .first()!
         tagPivot.status = .verified
         try await tagPivot.save(on: app.db)
-        
+
         try app
             .describe("Verify location as moderator should be successful and return ok")
             .post(waypointsPath.appending("\(repository.requireID())/locations/verify/\(location.requireID())"))
@@ -283,7 +275,7 @@ final class WaypointSummaryTests: AppTestCase, WaypointTest, TagTest, UserTest {
             .expect(.ok)
             .expect(.json)
             .test()
-        
+
         try app
             .describe("Verify waypoint as moderator should be successful and return ok")
             .post(waypointsPath.appending("\(repository.requireID())/waypoints/verify/\(detail.requireID())"))
@@ -291,11 +283,11 @@ final class WaypointSummaryTests: AppTestCase, WaypointTest, TagTest, UserTest {
             .expect(.ok)
             .expect(.json)
             .test()
-        
+
         let newLanguage = try await createLanguage()
         let newDetail = try await detail.updateWith(languageId: newLanguage.requireID(), on: app.db)
         try await newDetail.$language.load(on: app.db)
-        
+
         try app
             .describe("Verify waypoint as moderator should be successful and return ok")
             .post(waypointsPath.appending("\(repository.requireID())/waypoints/verify/\(newDetail.requireID())"))
@@ -303,7 +295,7 @@ final class WaypointSummaryTests: AppTestCase, WaypointTest, TagTest, UserTest {
             .expect(.ok)
             .expect(.json)
             .test()
-        
+
         let elasticResponse = try await app.elastic.get(document: WaypointSummaryModel.Elasticsearch.self, id: repository.requireID().uuidString, from: WaypointSummaryModel.Elasticsearch.schema(for: detail.language.languageCode))
         let content = elasticResponse.source
         XCTAssertEqual(content.id, repository.id)
@@ -329,11 +321,11 @@ final class WaypointSummaryTests: AppTestCase, WaypointTest, TagTest, UserTest {
         XCTAssertEqual(secondContent.location.lon, location.longitude)
         XCTAssert(try secondContent.tags.contains(tag.repository.requireID()))
     }
-    
+
     func testDeleteRepositoryRemovesAllItsDetailsFromElasticsearch() async throws {
         let moderatorToken = try await getToken(for: .moderator)
         let (repository, detail, location) = try await createNewWaypoint()
-        
+
         try app
             .describe("Verify location as moderator should be successful and return ok")
             .post(waypointsPath.appending("\(repository.requireID())/locations/verify/\(location.requireID())"))
@@ -341,7 +333,7 @@ final class WaypointSummaryTests: AppTestCase, WaypointTest, TagTest, UserTest {
             .expect(.ok)
             .expect(.json)
             .test()
-        
+
         try app
             .describe("Verify waypoint as moderator should be successful and return ok")
             .post(waypointsPath.appending("\(repository.requireID())/waypoints/verify/\(detail.requireID())"))
@@ -349,10 +341,10 @@ final class WaypointSummaryTests: AppTestCase, WaypointTest, TagTest, UserTest {
             .expect(.ok)
             .expect(.json)
             .test()
-        
+
         let newLanguage = try await createLanguage()
         let newDetail = try await detail.updateWith(languageId: newLanguage.requireID(), on: app.db)
-        
+
         try app
             .describe("Verify waypoint as moderator should be successful and return ok")
             .post(waypointsPath.appending("\(repository.requireID())/waypoints/verify/\(newDetail.requireID())"))
@@ -360,25 +352,25 @@ final class WaypointSummaryTests: AppTestCase, WaypointTest, TagTest, UserTest {
             .expect(.ok)
             .expect(.json)
             .test()
-        
+
         try app
             .describe("A moderator should be able to delete an unverified waypoint")
             .delete(waypointsPath.appending(repository.requireID().uuidString))
             .bearerToken(moderatorToken)
             .expect(.noContent)
             .test()
-        
+
         let elasticResponse = try? await app.elastic.get(document: WaypointSummaryModel.Elasticsearch.self, id: repository.requireID().uuidString, from: WaypointSummaryModel.Elasticsearch.wildcardSchema)
         XCTAssertNil(elasticResponse)
         let secondElasticResponse = try? await app.elastic.get(document: WaypointSummaryModel.Elasticsearch.self, id: repository.requireID().uuidString, from: WaypointSummaryModel.Elasticsearch.wildcardSchema)
         XCTAssertNil(secondElasticResponse)
     }
-    
+
     func testDeactivateAndActivateLanguageRemovesAndAddsAllItsWaypointsFromAndToElasticsearch() async throws {
         let adminToken = try await getToken(for: .admin)
         let (repository, detail, location) = try await createNewWaypoint()
         try await detail.$language.load(on: app.db)
-        
+
         let tag = try await createNewTag()
         try await repository.$tags.attach(tag.repository, method: .ifNotExists, on: app.db)
         let tagPivot = try await repository.$tags.$pivots.query(on: app.db)
@@ -387,7 +379,7 @@ final class WaypointSummaryTests: AppTestCase, WaypointTest, TagTest, UserTest {
             .first()!
         tagPivot.status = .verified
         try await tagPivot.save(on: app.db)
-        
+
         try app
             .describe("Verify location as moderator should be successful and return ok")
             .post(waypointsPath.appending("\(repository.requireID())/locations/verify/\(location.requireID())"))
@@ -395,7 +387,7 @@ final class WaypointSummaryTests: AppTestCase, WaypointTest, TagTest, UserTest {
             .expect(.ok)
             .expect(.json)
             .test()
-        
+
         try app
             .describe("Verify waypoint as moderator should be successful and return ok")
             .post(waypointsPath.appending("\(repository.requireID())/waypoints/verify/\(detail.requireID())"))
@@ -403,11 +395,11 @@ final class WaypointSummaryTests: AppTestCase, WaypointTest, TagTest, UserTest {
             .expect(.ok)
             .expect(.json)
             .test()
-        
+
         let newLanguage = try await createLanguage()
         let newDetail = try await detail.updateWith(languageId: newLanguage.requireID(), on: app.db)
         try await newDetail.$language.load(on: app.db)
-        
+
         try app
             .describe("Verify waypoint as moderator should be successful and return ok")
             .post(waypointsPath.appending("\(repository.requireID())/waypoints/verify/\(newDetail.requireID())"))
@@ -415,7 +407,7 @@ final class WaypointSummaryTests: AppTestCase, WaypointTest, TagTest, UserTest {
             .expect(.ok)
             .expect(.json)
             .test()
-        
+
         try app
             .describe("Deactivate language as admin should return ok")
             .put(languagesPath.appending("\(newLanguage.requireID().uuidString)/deactivate"))
@@ -423,12 +415,12 @@ final class WaypointSummaryTests: AppTestCase, WaypointTest, TagTest, UserTest {
             .expect(.ok)
             .expect(.json)
             .test()
-        
+
         let elasticResponseAfterDeactivate = try? await app.elastic.get(document: WaypointSummaryModel.Elasticsearch.self, id: repository.requireID().uuidString, from: WaypointSummaryModel.Elasticsearch.schema(for: detail.language.languageCode))
         XCTAssertNotNil(elasticResponseAfterDeactivate)
         let secondElasticResponseAfterDeactivate = try? await app.elastic.get(document: WaypointSummaryModel.Elasticsearch.self, id: repository.requireID().uuidString, from: WaypointSummaryModel.Elasticsearch.schema(for: newDetail.language.languageCode))
         XCTAssertNil(secondElasticResponseAfterDeactivate)
-        
+
         try app
             .describe("Activate language as admin should return ok")
             .put(languagesPath.appending("\(newLanguage.requireID().uuidString)/activate"))
@@ -436,7 +428,7 @@ final class WaypointSummaryTests: AppTestCase, WaypointTest, TagTest, UserTest {
             .expect(.ok)
             .expect(.json)
             .test()
-        
+
         let elasticResponseAfterActivate = try? await app.elastic.get(document: WaypointSummaryModel.Elasticsearch.self, id: repository.requireID().uuidString, from: WaypointSummaryModel.Elasticsearch.schema(for: detail.language.languageCode))
         XCTAssertNotNil(elasticResponseAfterActivate)
         if let secondElasticResponseAfterActivate = try? await app.elastic.get(document: WaypointSummaryModel.Elasticsearch.self, id: repository.requireID().uuidString, from: WaypointSummaryModel.Elasticsearch.schema(for: newDetail.language.languageCode)) {
@@ -455,12 +447,12 @@ final class WaypointSummaryTests: AppTestCase, WaypointTest, TagTest, UserTest {
             XCTFail()
         }
     }
-    
+
     func testChangeLanguagePriorityChangesAllItsWaypointsLanguagePrioritiesInElasticsearch() async throws {
         let adminToken = try await getToken(for: .admin)
         let (repository, detail, location) = try await createNewWaypoint()
         try await detail.$language.load(on: app.db)
-        
+
         let tag = try await createNewTag()
         try await repository.$tags.attach(tag.repository, method: .ifNotExists, on: app.db)
         let tagPivot = try await repository.$tags.$pivots.query(on: app.db)
@@ -469,7 +461,7 @@ final class WaypointSummaryTests: AppTestCase, WaypointTest, TagTest, UserTest {
             .first()!
         tagPivot.status = .verified
         try await tagPivot.save(on: app.db)
-        
+
         try app
             .describe("Verify location as moderator should be successful and return ok")
             .post(waypointsPath.appending("\(repository.requireID())/locations/verify/\(location.requireID())"))
@@ -477,7 +469,7 @@ final class WaypointSummaryTests: AppTestCase, WaypointTest, TagTest, UserTest {
             .expect(.ok)
             .expect(.json)
             .test()
-        
+
         try app
             .describe("Verify waypoint as moderator should be successful and return ok")
             .post(waypointsPath.appending("\(repository.requireID())/waypoints/verify/\(detail.requireID())"))
@@ -485,11 +477,11 @@ final class WaypointSummaryTests: AppTestCase, WaypointTest, TagTest, UserTest {
             .expect(.ok)
             .expect(.json)
             .test()
-        
+
         let newLanguage = try await createLanguage()
         let newDetail = try await detail.updateWith(languageId: newLanguage.requireID(), on: app.db)
         try await newDetail.$language.load(on: app.db)
-        
+
         try app
             .describe("Verify waypoint as moderator should be successful and return ok")
             .post(waypointsPath.appending("\(repository.requireID())/waypoints/verify/\(newDetail.requireID())"))
@@ -497,15 +489,15 @@ final class WaypointSummaryTests: AppTestCase, WaypointTest, TagTest, UserTest {
             .expect(.ok)
             .expect(.json)
             .test()
-        
+
         let activeLanguageIds = try await LanguageModel.query(on: app.db)
             .filter(\.$priority != nil)
             .field(\.$id)
             .all()
             .map { try $0.requireID() }
-        
+
         let setLanguagesPriorityContent = Language.Detail.UpdatePriorities(newLanguagesOrder: activeLanguageIds.shuffled())
-        
+
         try app
             .describe("Update language priorities as admin should return ok and the new order")
             .put(languagesPath.appending("priorities"))
@@ -514,7 +506,7 @@ final class WaypointSummaryTests: AppTestCase, WaypointTest, TagTest, UserTest {
             .expect(.ok)
             .expect(.json)
             .test()
-        
+
         if let elasticResponse = try? await app.elastic.get(document: WaypointSummaryModel.Elasticsearch.self, id: repository.requireID().uuidString, from: WaypointSummaryModel.Elasticsearch.schema(for: detail.language.languageCode)) {
             let content = elasticResponse.source
             XCTAssertEqual(content.languagePriority, setLanguagesPriorityContent.newLanguagesOrder.firstIndex(of: detail.$language.id)! + 1)
@@ -530,7 +522,7 @@ final class WaypointSummaryTests: AppTestCase, WaypointTest, TagTest, UserTest {
         } else {
             XCTFail()
         }
-        if  let secondElasticResponse = try? await app.elastic.get(document: WaypointSummaryModel.Elasticsearch.self, id: repository.requireID().uuidString, from: WaypointSummaryModel.Elasticsearch.schema(for: newDetail.language.languageCode)) {
+        if let secondElasticResponse = try? await app.elastic.get(document: WaypointSummaryModel.Elasticsearch.self, id: repository.requireID().uuidString, from: WaypointSummaryModel.Elasticsearch.schema(for: newDetail.language.languageCode)) {
             let secondContent = secondElasticResponse.source
             XCTAssertEqual(secondContent.languagePriority, try setLanguagesPriorityContent.newLanguagesOrder.firstIndex(of: newLanguage.requireID())! + 1)
             XCTAssertEqual(secondContent.id, repository.id)
@@ -546,12 +538,12 @@ final class WaypointSummaryTests: AppTestCase, WaypointTest, TagTest, UserTest {
             XCTFail()
         }
     }
-    
+
     func testDeleteUserUpdatesAllTheirWaypointDetailsInElasticsearch() async throws {
         let adminToken = try await getToken(for: .admin)
         let (repository, detail, location) = try await createNewWaypoint()
         try await detail.$language.load(on: app.db)
-        
+
         try app
             .describe("Verify location as moderator should be successful and return ok")
             .post(waypointsPath.appending("\(repository.requireID())/locations/verify/\(location.requireID())"))
@@ -559,7 +551,7 @@ final class WaypointSummaryTests: AppTestCase, WaypointTest, TagTest, UserTest {
             .expect(.ok)
             .expect(.json)
             .test()
-        
+
         try app
             .describe("Verify waypoint as moderator should be successful and return ok")
             .post(waypointsPath.appending("\(repository.requireID())/waypoints/verify/\(detail.requireID())"))
@@ -567,11 +559,11 @@ final class WaypointSummaryTests: AppTestCase, WaypointTest, TagTest, UserTest {
             .expect(.ok)
             .expect(.json)
             .test()
-        
+
         let user = try await getUser(role: .user)
         let newLanguage = try await createLanguage()
         let newDetail = try await detail.updateWith(languageId: newLanguage.requireID(), userId: user.requireID(), on: app.db)
-        
+
         try app
             .describe("Verify waypoint as moderator should be successful and return ok")
             .post(waypointsPath.appending("\(repository.requireID())/waypoints/verify/\(newDetail.requireID())"))
@@ -579,14 +571,14 @@ final class WaypointSummaryTests: AppTestCase, WaypointTest, TagTest, UserTest {
             .expect(.ok)
             .expect(.json)
             .test()
-        
+
         try await app
             .describe("User should be able to delete himself; Delete user should return ok")
             .delete(usersPath.appending(user.requireID().uuidString))
             .bearerToken(getToken(for: user))
             .expect(.noContent)
             .test()
-        
+
         if let elasticResponse = try? await app.elastic.get(document: WaypointSummaryModel.Elasticsearch.self, id: repository.requireID().uuidString, from: WaypointSummaryModel.Elasticsearch.schema(for: detail.language.languageCode)) {
             let content = elasticResponse.source
             XCTAssertEqual(content.id, repository.id)
@@ -614,12 +606,12 @@ final class WaypointSummaryTests: AppTestCase, WaypointTest, TagTest, UserTest {
             XCTFail()
         }
     }
-    
+
     func testDeleteUserUpdatesAllTheirWaypointLocationsInElasticsearch() async throws {
         let adminToken = try await getToken(for: .admin)
         let (repository, detail, location) = try await createNewWaypoint()
         try await detail.$language.load(on: app.db)
-        
+
         try app
             .describe("Verify location as moderator should be successful and return ok")
             .post(waypointsPath.appending("\(repository.requireID())/locations/verify/\(location.requireID())"))
@@ -627,7 +619,7 @@ final class WaypointSummaryTests: AppTestCase, WaypointTest, TagTest, UserTest {
             .expect(.ok)
             .expect(.json)
             .test()
-        
+
         try app
             .describe("Verify waypoint as moderator should be successful and return ok")
             .post(waypointsPath.appending("\(repository.requireID())/waypoints/verify/\(detail.requireID())"))
@@ -635,11 +627,11 @@ final class WaypointSummaryTests: AppTestCase, WaypointTest, TagTest, UserTest {
             .expect(.ok)
             .expect(.json)
             .test()
-        
+
         let user = try await getUser(role: .user)
         let newDetail = try await detail.updateWith(userId: user.requireID(), on: app.db)
         let newLocation = try await location.updateWith(userId: user.requireID(), on: app.db)
-        
+
         try app
             .describe("Verify waypoint as moderator should be successful and return ok")
             .post(waypointsPath.appending("\(repository.requireID())/waypoints/verify/\(newDetail.requireID())"))
@@ -647,7 +639,7 @@ final class WaypointSummaryTests: AppTestCase, WaypointTest, TagTest, UserTest {
             .expect(.ok)
             .expect(.json)
             .test()
-        
+
         try app
             .describe("Verify location as moderator should be successful and return ok")
             .post(waypointsPath.appending("\(repository.requireID())/locations/verify/\(newLocation.requireID())"))
@@ -655,14 +647,14 @@ final class WaypointSummaryTests: AppTestCase, WaypointTest, TagTest, UserTest {
             .expect(.ok)
             .expect(.json)
             .test()
-        
+
         try await app
             .describe("User should be able to delete himself; Delete user should return ok")
             .delete(usersPath.appending(user.requireID().uuidString))
             .bearerToken(getToken(for: user))
             .expect(.noContent)
             .test()
-        
+
         if let elasticResponse = try? await app.elastic.get(document: WaypointSummaryModel.Elasticsearch.self, id: repository.requireID().uuidString, from: WaypointSummaryModel.Elasticsearch.schema(for: detail.language.languageCode)) {
             let content = elasticResponse.source
             XCTAssertEqual(content.id, repository.id)

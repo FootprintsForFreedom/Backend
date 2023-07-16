@@ -1,10 +1,3 @@
-//
-//  Titled.swift
-//  
-//
-//  Created by niklhut on 08.06.22.
-//
-
 import Fluent
 
 /// Represents a model with a title

@@ -1,10 +1,3 @@
-//
-//  StaticContentDetail.swift
-//  
-//
-//  Created by niklhut on 09.06.22.
-//
-
 import Foundation
 
 public extension StaticContent {
@@ -21,7 +14,7 @@ public extension StaticContent.Detail {
         public let id: UUID
         /// Slug uniquely identifying the static content repository.
         public let slug: String
-        
+
         /// Creates a static content list object.
         /// - Parameters:
         ///   - id: Id uniquely identifying the static content repository.
@@ -31,7 +24,7 @@ public extension StaticContent.Detail {
             self.slug = slug
         }
     }
-    
+
     /// Used to detail static content objects.
     struct Detail: Codable {
         /// Id uniquely identifying the static content repository.
@@ -50,7 +43,7 @@ public extension StaticContent.Detail {
         public let moderationTitle: String?
         /// An array containing all snippets which are required for this static content.
         public let requiredSnippets: [StaticContent.Snippet]?
-        
+
         /// Creates a static content detail object for admins.
         /// - Parameters:
         ///   - id: Id uniquely identifying the static content repository.
@@ -61,7 +54,7 @@ public extension StaticContent.Detail {
         ///   - detailId: Id uniquely identifying the static content detail object.
         /// - Returns: A static content detail object.
         public static func publicDetail(id: UUID, title: String, text: String, languageCode: String, availableLanguageCodes: [String], detailId: UUID) -> Self {
-            return .init(
+            .init(
                 id: id,
                 title: title,
                 text: text,
@@ -70,7 +63,7 @@ public extension StaticContent.Detail {
                 detailId: detailId
             )
         }
-        
+
         /// Creates a static content detail object for admins.
         /// - Parameters:
         ///   - id: Id uniquely identifying the static content repository.
@@ -83,7 +76,7 @@ public extension StaticContent.Detail {
         ///   - detailId: Id uniquely identifying the static content detail object.
         /// - Returns: A static content detail object.
         public static func administratorDetail(id: UUID, title: String, text: String, languageCode: String, availableLanguageCodes: [String], detailId: UUID, moderationTitle: String?, requiredSnippets: [StaticContent.Snippet]?) -> Self {
-            return .init(
+            .init(
                 id: id,
                 title: title,
                 text: text,
@@ -94,7 +87,7 @@ public extension StaticContent.Detail {
                 requiredSnippets: requiredSnippets
             )
         }
-        
+
         /// Creates a static content detail object for admins.
         /// - Parameters:
         ///   - id: Id uniquely identifying the static content repository.
@@ -110,10 +103,10 @@ public extension StaticContent.Detail {
             self.languageCode = languageCode
             self.availableLanguageCodes = availableLanguageCodes
             self.detailId = detailId
-            self.moderationTitle = nil
-            self.requiredSnippets = nil
+            moderationTitle = nil
+            requiredSnippets = nil
         }
-        
+
         /// Creates a static content detail object for admins.
         /// - Parameters:
         ///   - id: Id uniquely identifying the static content repository.
@@ -135,7 +128,7 @@ public extension StaticContent.Detail {
             self.requiredSnippets = requiredSnippets
         }
     }
-    
+
     /// Used to create static content objects.
     struct Create: Codable {
         /// A title uniquely identifying the static content repository. Preferably in english.
@@ -150,7 +143,7 @@ public extension StaticContent.Detail {
         public let requiredSnippets: [StaticContent.Snippet]?
         /// The language code for the static content.
         public let languageCode: String
-        
+
         /// Creates a static content create object.
         /// - Parameters:
         ///   - repositoryTitle: A title uniquely identifying the static content repository. Preferably in english.
@@ -168,7 +161,7 @@ public extension StaticContent.Detail {
             self.languageCode = languageCode
         }
     }
-    
+
     /// Used to update static content objects.
     struct Update: Codable {
         /// The localized title describing the the static content to a moderator.
@@ -179,7 +172,7 @@ public extension StaticContent.Detail {
         public let text: String
         /// The language code for the static content.
         public let languageCode: String
-        
+
         /// Creates a static content update object.
         /// - Parameters:
         ///   - moderationTitle: The localized title describing the the static content to a moderator.
@@ -193,7 +186,7 @@ public extension StaticContent.Detail {
             self.languageCode = languageCode
         }
     }
-    
+
     /// Used to patch static content objects.
     struct Patch: Codable {
         /// The localized title describing the the static content to a moderator.
@@ -204,7 +197,7 @@ public extension StaticContent.Detail {
         public let text: String?
         /// The id of an existing static content. All parameters not set in this request will be taken from this static content.
         public let idForStaticContentDetailToPatch: UUID
-        
+
         /// Creates a static content patch object.
         /// - Parameters:
         ///   - moderationTitle: The localized title describing the the static content to a moderator.

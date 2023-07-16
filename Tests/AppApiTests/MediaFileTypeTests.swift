@@ -1,12 +1,5 @@
-//
-//  MediaFileTypeTests.swift
-//  
-//
-//  Created by niklhut on 27.03.23.
-//
-
-@testable import AppApi
 import XCTest
+@testable import AppApi
 
 final class MediaFileTypeTests: XCTestCase {
     func testNoDuplicateMimeType() {

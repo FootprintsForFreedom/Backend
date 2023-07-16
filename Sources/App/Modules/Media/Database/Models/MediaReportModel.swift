@@ -1,18 +1,11 @@
-//
-//  MediaReportModel.swift
-//  
-//
-//  Created by niklhut on 08.06.22.
-//
-
-import Vapor
 import Fluent
+import Vapor
 
 final class MediaReportModel: ReportModel {
     typealias Module = MediaModule
-    
-    struct FieldKeys {
-        struct v1 {
+
+    enum FieldKeys {
+        enum v1 {
             static var title: FieldKey { "title" }
             static var slug: FieldKey { "slug" }
             static var reason: FieldKey { "reason" }
@@ -25,27 +18,28 @@ final class MediaReportModel: ReportModel {
             static var deletedAt: FieldKey { "deleted_at" }
         }
     }
-    
+
     @ID() var id: UUID?
-    
+
     @Field(key: FieldKeys.v1.title) var title: String
     @Field(key: FieldKeys.v1.slug) var slug: String
     @Field(key: FieldKeys.v1.reason) var reason: String
-    
+
     @OptionalParent(key: FieldKeys.v1.visibleDetailId) var visibleDetail: MediaDetailModel?
     @Parent(key: FieldKeys.v1.repositoryId) var repository: MediaRepositoryModel
     @OptionalParent(key: FieldKeys.v1.userId) var user: UserAccountModel?
-    
+
     @OptionalField(key: FieldKeys.v1.verifiedAt) var verifiedAt: Date?
-    
+
     @Timestamp(key: FieldKeys.v1.createdAt, on: .create) var createdAt: Date?
     @Timestamp(key: FieldKeys.v1.updatedAt, on: .update) var updatedAt: Date?
-    
+
     // MARK: soft delete
+
     @Timestamp(key: FieldKeys.v1.deletedAt, on: .delete) var deletedAt: Date?
-    
+
     init() { }
-    
+
     init(
         verifiedAt: Date?,
         title: String,
@@ -59,9 +53,9 @@ final class MediaReportModel: ReportModel {
         self.title = title
         self.slug = slug
         self.reason = reason
-        self.$visibleDetail.id = visibleDetailId
-        self.$repository.id = repositoryId
-        self.$user.id = userId
+        $visibleDetail.id = visibleDetailId
+        $repository.id = repositoryId
+        $user.id = userId
     }
 }
 

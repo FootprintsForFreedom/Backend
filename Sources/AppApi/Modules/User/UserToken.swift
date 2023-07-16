@@ -1,10 +1,3 @@
-//
-//  UserToken.swift
-//  
-//
-//  Created by niklhut on 01.02.22.
-//
-
 import Foundation
 
 public extension User {
@@ -23,7 +16,7 @@ public extension User.Token {
         public let access_token: String
         /// The user to which the token belongs.
         public let user: User.Account.Detail
-        
+
         /// Creates a token detail object.
         /// - Parameters:
         ///   - id: Id uniquely identifying the token.

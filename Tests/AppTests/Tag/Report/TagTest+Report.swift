@@ -1,13 +1,6 @@
-//
-//  TagTest+Report.swift
-//  
-//
-//  Created by niklhut on 13.06.22.
-//
-
-@testable import App
-import XCTVapor
 import Fluent
+import XCTVapor
+@testable import App
 
 extension TagTest {
     func createNewTagReport(
@@ -21,7 +14,7 @@ extension TagTest {
         if userId == nil {
             userId = try await getUser(role: .user).requireID()
         }
-        
+
         let report = try TagReportModel(
             verifiedAt: verifiedAt,
             title: title,
@@ -32,7 +25,7 @@ extension TagTest {
             userId: userId
         )
         try await report.create(on: app.db)
-        
+
         return report
     }
 }

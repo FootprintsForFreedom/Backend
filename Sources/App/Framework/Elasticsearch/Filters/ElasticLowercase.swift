@@ -1,10 +1,3 @@
-//
-//  ElasticLowercase.swift
-//  
-//
-//  Created by niklhut on 07.10.22.
-//
-
 import Foundation
 
 /// Changes token text to lowercase.
@@ -14,22 +7,21 @@ enum ElasticLowercase: String, CustomElasticFilter {
     case greek
     case irish
     case turkish
-    
+
     static var `default` = "lowercase"
     var name: String { "\(language)_\(Self.default)" }
-    
+
     /// Language-specific lowercase token filter to use.
     ///
     /// Valid values include: `greek`, `irish`, `turkish`.
-    var language: String { self.rawValue }
-    
+    var language: String { rawValue }
+
     var json: [String: Any] {
         [
             name: [
                 "type": Self.default,
-                "language": language
-            ]
+                "language": language,
+            ],
         ]
     }
 }
-

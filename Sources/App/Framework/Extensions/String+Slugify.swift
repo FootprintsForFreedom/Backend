@@ -1,20 +1,13 @@
-//
-//  String+Slugify.swift
-//  
-//
-//  Created by niklhut on 02.06.22.
-//
-
 import Foundation
 
-extension String {
+public extension String {
     /// Generate a slug for a string.
     ///
     /// A slug can be used as a request parameter. Therefore it does not consist of any special characters and is lowercased.
     /// - Returns: The slugified string.
-    public func slugify() -> String {
+    func slugify() -> String {
         let allowed = CharacterSet(charactersIn: "abcdefghijklmnopqrstuvwxyz0123456789-_.")
-        return self.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmingCharacters(in: .whitespacesAndNewlines)
             .lowercased()
             .replacingOccurrences(of: "ä", with: "ae")
             .replacingOccurrences(of: "ö", with: "oe")

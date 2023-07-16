@@ -1,10 +1,3 @@
-//
-//  WaypointLocation.swift
-//  
-//
-//  Created by niklhut on 17.02.22.
-//
-
 import Foundation
 
 public extension Waypoint {
@@ -15,7 +8,7 @@ public extension Waypoint {
         public let latitude: Double
         /// The longitude of the location.
         public let longitude: Double
-        
+
         /// Creates a location object.
         /// - Parameters:
         ///   - latitude: The latitude of the location.

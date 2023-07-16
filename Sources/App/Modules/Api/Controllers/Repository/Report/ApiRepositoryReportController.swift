@@ -1,12 +1,5 @@
-//
-//  ApiRepositoryReportController.swift
-//  
-//
-//  Created by niklhut on 08.06.22.
-//
-
-import Vapor
 import Fluent
+import Vapor
 
 /// Streamlines reporting repositories.
 protocol ApiRepositoryReportController:

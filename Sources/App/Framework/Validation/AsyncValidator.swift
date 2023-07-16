@@ -1,10 +1,3 @@
-//
-//  AsyncValidator.swift
-//  
-//
-//  Created by niklhut on 01.02.22.
-//
-
 import Vapor
 
 /// Asynchronously validates a request
@@ -13,7 +6,7 @@ public protocol AsyncValidator {
     var key: String { get }
     /// The error message sent when the validation fails.
     var message: String { get }
-    
+
     /// Validates a request.
     /// - Parameters:
     ///   - req: The request to validate.

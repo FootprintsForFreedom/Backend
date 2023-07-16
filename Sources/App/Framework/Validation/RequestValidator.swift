@@ -1,23 +1,16 @@
-//
-//  RequestValidator.swift
-//  
-//
-//  Created by niklhut on 01.02.22.
-//
-
 import Vapor
 
 /// Validator for a request.
 public struct RequestValidator {
     /// All validators that need to be checked.
     public var validators: [AsyncValidator]
-    
+
     /// Initializes the request validator with all required validator fields.
     /// - Parameter validators: The required validators.
     public init(_ validators: [AsyncValidator]) {
         self.validators = validators
     }
-    
+
     /// Validates a request.
     /// - Parameters:
     ///   - req: The request to validate.

@@ -1,25 +1,18 @@
-//
-//  LanguageTest.swift
-//  
-//
-//  Created by niklhut on 21.03.22.
-//
-
-@testable import App
-import XCTVapor
 import Fluent
+import XCTVapor
+@testable import App
 
 protocol LanguageTest: AppTestCase { }
 
 extension LanguageTest {
     var languagesPath: String { "api/v1/languages/" }
-    
+
     func createLanguage(
         languageCode: String? = nil,
         activated: Bool = true
     ) async throws -> LanguageModel {
         let adminToken = try await getToken(for: .admin)
-        
+
         let languageCode: String = try {
             var languageCode = languageCode
             if languageCode == nil {
@@ -40,7 +33,7 @@ extension LanguageTest {
             }
             return languageCode!
         }()
-        
+
         var languageId: UUID?
         try app
             .describe("Create language should return ok and the created language")
@@ -53,7 +46,7 @@ extension LanguageTest {
                 languageId = content.id
             }
             .test()
-        
+
         if let languageId, !activated {
             try app
                 .describe("Deactivate language as admin should return ok")
@@ -63,7 +56,7 @@ extension LanguageTest {
                 .expect(.json)
                 .test()
         }
-        
+
         let language = try await LanguageModel.query(on: app.db).filter(\.$languageCode == languageCode).first()!
         return language
     }

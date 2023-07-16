@@ -1,14 +1,7 @@
-//
-//  WaypointApiDeleteUserTests.swift
-//  
-//
-//  Created by niklhut on 30.05.22.
-//
-
-@testable import App
-import XCTVapor
 import Fluent
 import Spec
+import XCTVapor
+@testable import App
 
 final class WaypointApiDeleteUserTests: AppTestCase, WaypointTest, UserTest {
     func testDeleteUserSetsUserIdToNil() async throws {
@@ -16,16 +9,16 @@ final class WaypointApiDeleteUserTests: AppTestCase, WaypointTest, UserTest {
         let (user, token) = try await createNewUserWithToken()
         let (waypointRepository, waypoint, location) = try await createNewWaypoint(verified: true, userId: user.requireID())
         try await waypoint.$language.load(on: app.db)
-        
+
         try app
             .describe("User should be able to delete himself; Delete user should set waypoint detail user id to nil")
             .delete(usersPath.appending(user.requireID().uuidString))
             .bearerToken(token)
             .expect(.noContent)
             .test()
-        
+
         try await Task.sleep(for: .seconds(1))
-        
+
         try app
             .describe("Get verified waypoint as moderator should return ok and more details")
             .get(waypointsPath.appending(waypointRepository.requireID().uuidString))
@@ -42,11 +35,11 @@ final class WaypointApiDeleteUserTests: AppTestCase, WaypointTest, UserTest {
                 XCTAssertEqual(content.detailId, waypoint.id!)
             }
             .test()
-        
+
         let updatedDetail = try await WaypointDetailModel.find(waypoint.requireID(), on: app.db)!
         try await updatedDetail.$user.load(on: app.db)
         XCTAssertEqual(updatedDetail.$user.id, nil)
-        
+
         let updatedLocation = try await WaypointLocationModel.find(location.requireID(), on: app.db)!
         try await updatedLocation.$user.load(on: app.db)
         XCTAssertEqual(updatedLocation.$user.id, nil)

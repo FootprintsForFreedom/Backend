@@ -1,10 +1,3 @@
-//
-//  LanguageRequest.swift
-//  
-//
-//  Created by niklhut on 31.01.23.
-//
-
 import Foundation
 
 public extension Language {
@@ -19,7 +12,7 @@ public extension Language.Request {
     struct PreferredLanguage: Codable {
         /// The preferred language for which results should ideally be returned.
         public let preferredLanguage: String?
-        
+
         /// Creates a preferred language object.
         /// - Parameter preferredLanguage: The preferred language for which results should ideally be returned.
         public init(preferredLanguage: String?) {

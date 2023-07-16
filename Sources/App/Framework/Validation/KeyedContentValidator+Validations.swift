@@ -1,10 +1,3 @@
-//
-//  KeyedContentValidator+Validations.swift
-//  
-//
-//  Created by niklhut on 01.02.22.
-//
-
 import Vapor
 
 public extension KeyedContentValidator where T == String {
@@ -17,7 +10,7 @@ public extension KeyedContentValidator where T == String {
     static func required(_ key: String, _ message: String? = nil, optional: Bool = false) -> KeyedContentValidator<T> {
         .init(key, message ?? "\(key.capitalized) is required", optional: optional) { value, _ in !value.isEmpty }
     }
-    
+
     /// Requires a string with a minimum amount of characters.
     /// - Parameters:
     ///   - key: The key at which to find the value to validate
@@ -28,7 +21,7 @@ public extension KeyedContentValidator where T == String {
     static func min(_ key: String, _ length: Int, _ message: String? = nil, optional: Bool = false) -> KeyedContentValidator<T> {
         .init(key, message ?? "\(key.capitalized) is too short (min: \(length) characters)", optional: optional) { value, _ in value.count >= length }
     }
-    
+
     /// Requires a string with a maximum amount of characters.
     /// - Parameters:
     ///   - key: The key at which to find the value to validate
@@ -39,7 +32,7 @@ public extension KeyedContentValidator where T == String {
     static func max(_ key: String, _ length: Int, _ message: String? = nil, optional: Bool = false) -> KeyedContentValidator<T> {
         .init(key, message ?? "\(key.capitalized) is too long (max: \(length) characters)", optional: optional) { value, _ in value.count <= length }
     }
-    
+
     /// Requires a string consisting of **only** alphanumerics to be present.
     /// - Parameters:
     ///   - key: The key at which to find the value to validate
@@ -51,7 +44,7 @@ public extension KeyedContentValidator where T == String {
             !Validator.characterSet(.alphanumerics).validate(value).isFailure
         }
     }
-    
+
     /// Requires a string in the form of an email to be present.
     /// - Parameters:
     ///   - key: The key at which to find the value to validate
@@ -76,7 +69,7 @@ public extension KeyedContentValidator where T == Int {
     static func min(_ key: String, _ minValue: Int, _ message: String? = nil, optional: Bool = false) -> KeyedContentValidator<T> {
         .init(key, message ?? "\(key.capitalized) is too small (min: \(minValue))", optional: optional) { value, _ in value >= minValue }
     }
-    
+
     /// Requires an int with a maximum value.
     /// - Parameters:
     ///   - key: The key at which to find the value to validate
@@ -87,7 +80,7 @@ public extension KeyedContentValidator where T == Int {
     static func max(_ key: String, _ maxValue: Int, _ message: String? = nil, optional: Bool = false) -> KeyedContentValidator<T> {
         .init(key, message ?? "\(key.capitalized) is too big (max: \(maxValue))", optional: optional) { value, _ in value <= maxValue }
     }
-    
+
     /// Requires an int within the given values.
     /// - Parameters:
     ///   - key: The key at which to find the value to validate

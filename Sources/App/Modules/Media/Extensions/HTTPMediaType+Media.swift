@@ -1,12 +1,5 @@
-//
-//  HTTPMediaType+Media.swift
-//  
-//
-//  Created by niklhut on 12.05.22.
-//
-
-import Vapor
 import AppApi
+import Vapor
 
 extension HTTPMediaType {
     func mediaFileType() -> Media.Detail.FileType? {
@@ -15,11 +8,11 @@ extension HTTPMediaType {
         }
         return nil
     }
-    
+
     var isValidForMedia: Bool {
         mediaFileType() != nil
     }
-    
+
     func preferredFilenameExtension() -> String? {
         switch "\(type)/\(subType)" {
         case "video/quicktime": return "mov"

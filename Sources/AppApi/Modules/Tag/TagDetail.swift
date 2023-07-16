@@ -1,10 +1,3 @@
-//
-//  TagDetail.swift
-//  
-//
-//  Created by niklhut on 23.05.22.
-//
-
 import Foundation
 
 public extension Tag {
@@ -23,7 +16,7 @@ public extension Tag.Detail {
         public let title: String
         /// The slug uniquely identifying the waypoint.
         public let slug: String
-        
+
         /// Creates a tag list object.
         /// - Parameters:
         ///   - id: Id uniquely identifying the tag repository.
@@ -35,7 +28,7 @@ public extension Tag.Detail {
             self.slug = slug
         }
     }
-    
+
     /// Used to detail tag objects.
     struct Detail: Codable {
         /// Id uniquely identifying the tag repository.
@@ -52,7 +45,7 @@ public extension Tag.Detail {
         public let availableLanguageCodes: [String]
         /// Id uniquely identifying the tag detail object.
         public let detailId: UUID
-        
+
         /// Creates a tag detail object for everyone.
         /// - Parameters:
         ///   - id: Id uniquely identifying the tag repository.
@@ -72,7 +65,7 @@ public extension Tag.Detail {
             self.detailId = detailId
         }
     }
-    
+
     /// Used to create tag objects.
     struct Create: Codable {
         /// The tag title.
@@ -81,7 +74,7 @@ public extension Tag.Detail {
         public let keywords: [String]
         /// The language code for the tag title and keywords.
         public let languageCode: String
-        
+
         /// Creates a tag create object.
         /// - Parameters:
         ///   - title: The tag title.
@@ -93,10 +86,10 @@ public extension Tag.Detail {
             self.languageCode = languageCode
         }
     }
-    
+
     /// Used to update tag objects.
     typealias Update = Create
-    
+
     /// Used to patch tag objects.
     struct Patch: Codable {
         /// The tag title.
@@ -105,7 +98,7 @@ public extension Tag.Detail {
         public let keywords: [String]?
         /// The language code for the tag title and keywords.
         public let idForTagDetailToPatch: UUID
-        
+
         /// Creates a tag patch object.
         /// - Parameters:
         ///   - title: The tag title.

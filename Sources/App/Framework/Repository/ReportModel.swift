@@ -1,12 +1,5 @@
-//
-//  ReportModel.swift
-//  
-//
-//  Created by niklhut on 08.06.22.
-//
-
-import Vapor
 import Fluent
+import Vapor
 
 /// A repository report model.
 ///
@@ -16,7 +9,7 @@ protocol ReportModel: DetailModel, Titled, Slugable {
     var reason: String { get set }
     /// The reason for which the repository was reported.
     var _$reason: FieldProperty<Self, String> { get }
-    
+
     /// The detail model which was visible to the user while reporting.
     var visibleDetail: Repository.Detail? { get set }
     /// The detail model which was visible to the user while reporting.

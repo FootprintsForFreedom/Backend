@@ -1,19 +1,12 @@
-//
-//  MediaTest.swift
-//  
-//
-//  Created by niklhut on 14.05.22.
-//
-
-@testable import App
-import XCTVapor
 import Fluent
+import XCTVapor
+@testable import App
 
 protocol MediaTest: WaypointTest { }
 
 extension MediaTest {
     var mediaPath: String { "api/v1/media/" }
-    
+
     func createNewMedia(
         title: String = "New Media Title \(UUID())",
         detailText: String = "New Media Description",
@@ -28,9 +21,9 @@ extension MediaTest {
         if userId == nil {
             userId = try await getUser(role: .user).requireID()
         }
-        
+
         let languageId: UUID = try await {
-            if let languageId = languageId {
+            if let languageId {
                 return languageId
             } else {
                 return try await LanguageModel
@@ -40,26 +33,26 @@ extension MediaTest {
                     .requireID()
             }
         }()
-        
+
         let waypointId: UUID = try await {
-            if let waypointId = waypointId {
+            if let waypointId {
                 return waypointId
             } else {
                 return try await createNewWaypoint(languageId: languageId).repository.requireID()
             }
         }()
-        
+
         let mediaRepository = MediaRepositoryModel(requiredFileType: fileType)
         mediaRepository.$waypoint.id = waypointId
         try await mediaRepository.create(on: app.db)
-        
+
         let mediaFile = try await MediaFileModel.createWith(
             mediaDirectory: UUID().uuidString,
             fileType: fileType,
             userId: userId,
             on: app.db
         )
-        
+
         let mediaDetail = try await MediaDetailModel.createWith(
             verified: false,
             title: title,
@@ -71,7 +64,7 @@ extension MediaTest {
             userId: userId,
             on: self
         )
-        
+
         if verified {
             try app
                 .describe("Verify media as moderator should be successful and return ok")
@@ -84,7 +77,7 @@ extension MediaTest {
                 }
                 .test()
         }
-        
+
         return (mediaRepository, mediaDetail, mediaFile)
     }
 }
@@ -131,7 +124,7 @@ extension MediaDetailModel {
             userId: userId
         )
         try await mediaDetail.create(on: test.app.db)
-        
+
         if verified {
             try test.app
                 .describe("Verify media as moderator should be successful and return ok")
@@ -144,10 +137,10 @@ extension MediaDetailModel {
                 }
                 .test()
         }
-        
+
         return mediaDetail
     }
-    
+
     @discardableResult
     func updateWith(
         verifiedAt: Date? = nil,
@@ -161,16 +154,16 @@ extension MediaDetailModel {
         on db: Database
     ) async throws -> Self {
         let slug = slug ?? title.appending(" ").appending(Date().toString(with: .day)).slugify()
-        let mediaDetail = Self.init(
+        let mediaDetail = Self(
             verifiedAt: verifiedAt,
             title: title,
             slug: slug,
             detailText: detailText,
             source: source,
-            languageId: languageId ?? self.$language.id,
-            repositoryId: self.$repository.id,
-            fileId: fileId ?? self.$media.id,
-            userId: userId ?? self.$user.id!
+            languageId: languageId ?? $language.id,
+            repositoryId: $repository.id,
+            fileId: fileId ?? $media.id,
+            userId: userId ?? $user.id!
         )
         try await mediaDetail.create(on: db)
         return mediaDetail

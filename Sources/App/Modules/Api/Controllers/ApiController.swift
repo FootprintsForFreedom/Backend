@@ -1,10 +1,3 @@
-//
-//  ApiController.swift
-//  
-//
-//  Created by niklhut on 01.02.22.
-//
-
 import Vapor
 
 /// Streamlines controlling models.
@@ -21,7 +14,7 @@ protocol ApiControllerWithoutList:
     /// - Parameter optional: Wether or not the validator is required.
     /// - Returns: The ``AsyncValidator``s which need to be fulfilled to create update or patch the model.
     func validators(optional: Bool) -> [AsyncValidator]
-    
+
     /// Sets up the model routes.
     /// - Parameter routes: The routes on which to setup the model routes.
     func setupRoutes(_ routes: RoutesBuilder)
@@ -31,31 +24,31 @@ extension ApiControllerWithoutList {
     func validators(optional: Bool) -> [AsyncValidator] {
         []
     }
-    
+
     func createValidators() -> [AsyncValidator] {
         validators(optional: false)
     }
-    
+
     func updateValidators() -> [AsyncValidator] {
         validators(optional: false)
     }
-    
+
     func patchValidators() -> [AsyncValidator] {
         validators(optional: true)
     }
-    
+
     func createResponse(_ req: Request, _ model: DatabaseModel) async throws -> Response {
         try await detailOutput(req, model).encodeResponse(status: .created, for: req)
     }
-    
+
     func updateResponse(_ req: Request, _ model: DatabaseModel) async throws -> Response {
         try await detailOutput(req, model).encodeResponse(for: req)
     }
-    
+
     func patchResponse(_ req: Request, _ model: DatabaseModel) async throws -> Response {
         try await detailOutput(req, model).encodeResponse(for: req)
     }
-    
+
     func setupRoutes(_ routes: RoutesBuilder) {
         setupDetailRoutes(routes)
         setupCreateRoutes(routes)

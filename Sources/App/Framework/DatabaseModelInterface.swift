@@ -1,12 +1,5 @@
-//
-//  DatabaseModelInterface.swift
-//  
-//
-//  Created by niklhut on 01.02.22.
-//
-
-import Vapor
 import Fluent
+import Vapor
 
 /// Streamlines creating database models.
 public protocol DatabaseModelInterface: Fluent.Model where Self.IDValue == UUID {
@@ -23,7 +16,7 @@ public extension DatabaseModelInterface {
     ///
     /// The schema usually consists of the module identifier joined with the model identifier.
     static var schema: String { Module.identifier + "_" + identifier }
-    
+
     static var identifier: String {
         String(describing: self).dropFirst(Module.identifier.count).dropLast(5).lowercased() + "s"
     }

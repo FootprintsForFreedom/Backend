@@ -1,14 +1,7 @@
-//
-//  StaticContentApiPatchTests.swift
-//  
-//
-//  Created by niklhut on 10.06.22.
-//
-
-@testable import App
-import XCTVapor
 import Fluent
 import Spec
+import XCTVapor
+@testable import App
 
 extension StaticContent.Detail.Patch: Content { }
 
@@ -32,7 +25,7 @@ final class StaticContentApiPatchTests: AppTestCase, StaticContentTest {
             text: text,
             languageId: languageId
         )
-        
+
         let patchContent = try StaticContent.Detail.Patch(
             moderationTitle: patchedModerationTitle,
             title: patchedTitle,
@@ -41,12 +34,12 @@ final class StaticContentApiPatchTests: AppTestCase, StaticContentTest {
         )
         return (repository, detail, patchContent)
     }
-    
+
     func testSuccessfulPatchStaticContentTitleAsAdmin() async throws {
         let adminToken = try await getToken(for: .admin, verified: true)
         let (repository, detail, patchContent) = try await getStaticContentPatchContent(patchedTitle: "The patched title")
         try await detail.$language.load(on: app.db)
-        
+
         try app
             .describe("Patch staticContent title should return ok")
             .patch(staticContentPath.appending(repository.requireID().uuidString))
@@ -62,13 +55,13 @@ final class StaticContentApiPatchTests: AppTestCase, StaticContentTest {
             }
             .test()
     }
-    
+
     func testSuccessfulPatchStaticContentTitleWithDuplicateTitle() async throws {
         let adminToken = try await getToken(for: .admin, verified: true)
         let title = "My new title \(UUID())"
         let (repository, detail, patchContent) = try await getStaticContentPatchContent(title: title, patchedTitle: title)
         try await detail.$language.load(on: app.db)
-        
+
         try app
             .describe("Patch staticContent title should return ok")
             .patch(staticContentPath.appending(repository.requireID().uuidString))
@@ -84,12 +77,12 @@ final class StaticContentApiPatchTests: AppTestCase, StaticContentTest {
             }
             .test()
     }
-    
+
     func testSuccessfulPatchStaticContentModerationTitle() async throws {
         let adminToken = try await getToken(for: .admin, verified: true)
         let (repository, detail, patchContent) = try await getStaticContentPatchContent(patchedModerationTitle: "This is a new moderation title \(UUID())")
         try await detail.$language.load(on: app.db)
-        
+
         try app
             .describe("Patch staticContent text should return ok")
             .patch(staticContentPath.appending(repository.requireID().uuidString))
@@ -105,12 +98,12 @@ final class StaticContentApiPatchTests: AppTestCase, StaticContentTest {
             }
             .test()
     }
-    
+
     func testSuccessfulPatchStaticContentText() async throws {
         let adminToken = try await getToken(for: .admin, verified: true)
         let (repository, detail, patchContent) = try await getStaticContentPatchContent(patchedText: "This is a new text")
         try await detail.$language.load(on: app.db)
-        
+
         try app
             .describe("Patch staticContent text should return ok")
             .patch(staticContentPath.appending(repository.requireID().uuidString))
@@ -126,12 +119,12 @@ final class StaticContentApiPatchTests: AppTestCase, StaticContentTest {
             }
             .test()
     }
-    
+
     func testSuccessfulPatchStaticContentTextWithRequiredSnippets() async throws {
         let adminToken = try await getToken(for: .admin, verified: true)
         let (repository, detail, patchContent) = try await getStaticContentPatchContent(requiredSnippets: StaticContent.Snippet.allCases, patchedText: "This is a new text with \(StaticContent.Snippet.allCases.map(\.rawValue))")
         try await detail.$language.load(on: app.db)
-        
+
         try app
             .describe("Patch staticContent text should return ok")
             .patch(staticContentPath.appending(repository.requireID().uuidString))
@@ -147,12 +140,12 @@ final class StaticContentApiPatchTests: AppTestCase, StaticContentTest {
             }
             .test()
     }
-    
+
     func testPatchStaticContentTitleAsModeratorFails() async throws {
         let moderatorToken = try await getToken(for: .moderator, verified: true)
         let (repository, detail, patchContent) = try await getStaticContentPatchContent(patchedTitle: "The patched title")
         try await detail.$language.load(on: app.db)
-        
+
         try app
             .describe("Patch staticContent title should return ok")
             .patch(staticContentPath.appending(repository.requireID().uuidString))
@@ -161,11 +154,11 @@ final class StaticContentApiPatchTests: AppTestCase, StaticContentTest {
             .expect(.forbidden)
             .test()
     }
-    
+
     func testEmptyPatchStaticContentFails() async throws {
         let adminToken = try await getToken(for: .admin, verified: true)
         let (repository, _, patchContent) = try await getStaticContentPatchContent()
-        
+
         try app
             .describe("Patch staticContent with empty body should fail")
             .patch(staticContentPath.appending(repository.requireID().uuidString))
@@ -174,11 +167,11 @@ final class StaticContentApiPatchTests: AppTestCase, StaticContentTest {
             .expect(.badRequest)
             .test()
     }
-    
+
     func testPatchStaticContentNeedsValidTitle() async throws {
         let adminToken = try await getToken(for: .admin, verified: true)
         let (repository, _, patchContent) = try await getStaticContentPatchContent(patchedTitle: "")
-        
+
         try app
             .describe("Patch staticContent title should require valid title")
             .patch(staticContentPath.appending(repository.requireID().uuidString))
@@ -187,12 +180,11 @@ final class StaticContentApiPatchTests: AppTestCase, StaticContentTest {
             .expect(.badRequest)
             .test()
     }
-    
-    
+
     func testPatchStaticContentNeedsValidModerationTitle() async throws {
         let adminToken = try await getToken(for: .admin, verified: true)
         let (repository, _, patchContent) = try await getStaticContentPatchContent(patchedModerationTitle: "")
-        
+
         try app
             .describe("Patch staticContent title should require valid title")
             .patch(staticContentPath.appending(repository.requireID().uuidString))
@@ -201,11 +193,11 @@ final class StaticContentApiPatchTests: AppTestCase, StaticContentTest {
             .expect(.badRequest)
             .test()
     }
-    
+
     func testPatchStaticContentNeedsValidText() async throws {
         let adminToken = try await getToken(for: .admin, verified: true)
         let (repository, _, patchContent) = try await getStaticContentPatchContent(patchedText: "")
-        
+
         try app
             .describe("Patch staticContent title should require valid text")
             .patch(staticContentPath.appending(repository.requireID().uuidString))
@@ -214,11 +206,11 @@ final class StaticContentApiPatchTests: AppTestCase, StaticContentTest {
             .expect(.badRequest)
             .test()
     }
-    
+
     func testPatchStaticContentNeedsTextWithRequiredSnippets() async throws {
         let adminToken = try await getToken(for: .admin, verified: true)
         let (repository, _, patchContent) = try await getStaticContentPatchContent(requiredSnippets: StaticContent.Snippet.allCases, patchedText: "this is a text without snippets")
-        
+
         try app
             .describe("Patch staticContent title should require valid text")
             .patch(staticContentPath.appending(repository.requireID().uuidString))
@@ -227,12 +219,12 @@ final class StaticContentApiPatchTests: AppTestCase, StaticContentTest {
             .expect(.badRequest)
             .test()
     }
-    
+
     func testPatchStaticContentNeedsValidIdForStaticContentToPatch() async throws {
         let adminToken = try await getToken(for: .admin, verified: true)
         let (repository, _, _) = try await getStaticContentPatchContent()
         let patchContent = StaticContent.Detail.Patch(moderationTitle: "New moderation title \(UUID())", title: "New Title \(UUID())", text: nil, idForStaticContentDetailToPatch: UUID())
-        
+
         try app
             .describe("Patch staticContent title should require valid id for staticContent to patch")
             .patch(staticContentPath.appending(repository.requireID().uuidString))
@@ -241,10 +233,10 @@ final class StaticContentApiPatchTests: AppTestCase, StaticContentTest {
             .expect(.badRequest)
             .test()
     }
-    
+
     func testPatchStaticContentWithoutTokenFails() async throws {
         let (repository, _, patchContent) = try await getStaticContentPatchContent(patchedTitle: "The patched title")
-        
+
         try app
             .describe("Patch staticContent title should return ok")
             .patch(staticContentPath.appending(repository.requireID().uuidString))

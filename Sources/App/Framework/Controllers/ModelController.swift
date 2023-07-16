@@ -1,23 +1,16 @@
-//
-//  ModelController.swift
-//  
-//
-//  Created by niklhut on 07.10.22.
-//
-
-import Vapor
 import AppApi
+import Vapor
 
 /// Streamlines controlling models.
 public protocol ModelController {
     /// The api model.
     associatedtype ApiModel: ApiModelInterface
-    
+
     /// Gets the model identifier from a request.
     /// - Parameter req: The request containing the model identifier.
     /// - Returns: The model `UUID`.
     func identifier(_ req: Request) throws -> UUID
-    
+
     /// Gets the base routes for the model controller.
     /// - Parameter routes: The routes on which to register the model controller.
     /// - Returns: The model controller base routes.
@@ -34,7 +27,7 @@ extension ModelController {
         }
         return uuid
     }
-    
+
     func getBaseRoutes(_ routes: RoutesBuilder) -> RoutesBuilder {
         routes.grouped(ApiModel.Module.pathKey.pathComponents)
             .grouped(ApiModel.pathKey.pathComponents)

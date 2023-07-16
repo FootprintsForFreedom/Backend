@@ -1,10 +1,3 @@
-//
-//  WaypointRepository.swift
-//  
-//
-//  Created by niklhut on 21.03.22.
-//
-
 import Foundation
 import SwiftDiff
 
@@ -28,7 +21,7 @@ public extension Waypoint.Repository {
         public let detailText: String
         /// The language code for the waypoint title and description.
         public let languageCode: String
-        
+
         /// Creates a list unverified waypoint details object.
         /// - Parameters:
         ///   - detailId: Id uniquely identifying the waypoint detail object.
@@ -44,14 +37,14 @@ public extension Waypoint.Repository {
             self.languageCode = languageCode
         }
     }
-    
+
     /// Used to list unverified locations.
     struct ListUnverifiedLocations: Codable {
         /// Id uniquely identifying the location object.
         public let locationId: UUID
         /// The location.
         public let location: Waypoint.Location
-        
+
         /// Creates a list unverified locations object.
         /// - Parameters:
         ///   - locationId: Id uniquely identifying the location object.
@@ -61,7 +54,7 @@ public extension Waypoint.Repository {
             self.location = location
         }
     }
-    
+
     /// Used to detail changes between two waypoint objects.
     struct Changes: Codable {
         /// The differences between the titles of the detail objects.
@@ -72,7 +65,7 @@ public extension Waypoint.Repository {
         public let fromUser: User.Account.Detail?
         /// The user who created the destination detail object.
         public let toUser: User.Account.Detail?
-        
+
         /// Creates a waypoint changes object.
         /// - Parameters:
         ///   - titleDiff: The differences between the titles of the detail objects.

@@ -1,25 +1,18 @@
-//
-//  MediaApiListUnverifiedTests.swift
-//  
-//
-//  Created by niklhut on 18.05.22.
-//
-
-@testable import App
-import XCTVapor
 import Fluent
 import Spec
+import XCTVapor
+@testable import App
 
 final class MediaApiListUnverifiedTests: AppTestCase, MediaTest {
     func testSuccessfulListRepositoriesWithUnverifiedModels() async throws {
         let moderatorToken = try await getToken(for: .moderator)
-        
+
         let language = try await createLanguage()
         let language2 = try await createLanguage()
         let deactivatedLanguage = try await createLanguage(activated: false)
-        
+
         let userId = try await getUser(role: .user).requireID()
-        
+
         // Create an unverified media
         let (unverifiedMediaRepository, createdUnverifiedDetail, _) = try await createNewMedia(languageId: language.requireID(), userId: userId)
         // Create an unverified media for a deactivated language
@@ -40,20 +33,20 @@ final class MediaApiListUnverifiedTests: AppTestCase, MediaTest {
         )
         // Create a media in the other language
         let (verifiedMediaRepositoryInDifferentLanguage, _, _) = try await createNewMedia(verified: true, languageId: language2.requireID(), userId: userId)
-        
+
         // Get unverified media count
         let media = try await MediaRepositoryModel
             .query(on: app.db)
             .with(\.$details) { $0.with(\.$language) }
             .with(\.$tags.$pivots)
             .all()
-        
+
         let mediaCount = media.count
-        
+
         let unverifiedMediaCount = media
             .filter { $0.details.contains { $0.verifiedAt == nil && $0.language.priority != nil } || $0.$tags.pivots.contains { [Status.pending, .deleteRequested].contains($0.status) } }
             .count
-        
+
         try app
             .describe("List repositories with unverified models should return ok and the repositories")
             .get(mediaPath.appending("unverified/?preferredLanguage=\(language.languageCode)&per=\(mediaCount)"))
@@ -63,17 +56,16 @@ final class MediaApiListUnverifiedTests: AppTestCase, MediaTest {
             .expect(AppApi.Page<Media.Detail.List>.self) { content in
                 XCTAssertEqual(content.metadata.total, content.items.count)
                 XCTAssertEqual(content.items.count, unverifiedMediaCount)
-                XCTAssertEqual(content.items.map { $0.id }.uniqued().count, unverifiedMediaCount)
-                XCTAssert(content.items.map { $0.id }.uniqued().count == content.items.count)
+                XCTAssertEqual(content.items.map(\.id).uniqued().count, unverifiedMediaCount)
+                XCTAssert(content.items.map(\.id).uniqued().count == content.items.count)
                 XCTAssertEqual(content.metadata.total, unverifiedMediaCount)
-                
+
                 XCTAssert(content.items.contains { $0.id == unverifiedMediaRepository.id })
                 if let unverifiedMedia = content.items.first(where: { $0.id == unverifiedMediaRepository.id }) {
                     XCTAssertEqual(unverifiedMedia.id, unverifiedMediaRepository.id)
                     XCTAssertEqual(unverifiedMedia.title, createdUnverifiedDetail.title)
                 }
-                
-                
+
                 // contains the verified media repository because it has a second unverified media model
                 // here it should also return the verified model in the list for preview to see which media was edited
                 XCTAssert(content.items.contains { $0.id == verifiedMediaRepository.id })
@@ -81,16 +73,16 @@ final class MediaApiListUnverifiedTests: AppTestCase, MediaTest {
                     XCTAssertEqual(verifiedMedia.id, verifiedMediaRepository.id)
                     XCTAssertEqual(verifiedMedia.title, createdVerifiedDetail.title)
                 }
-                
+
                 XCTAssertFalse(content.items.contains { $0.id == verifiedMediaRepositoryInDifferentLanguage.id })
                 XCTAssertFalse(content.items.contains { $0.id == unverifiedMediaRepositoryForDeactivatedLanguage.id })
             }
             .test()
     }
-    
+
     func testListRepositoriesWithUnverifiedModelsAsUserFails() async throws {
         let userToken = try await getToken(for: .user)
-        
+
         try app
             .describe("List repositories with unverified models as user should fail")
             .get(mediaPath.appending("unverified"))
@@ -98,7 +90,7 @@ final class MediaApiListUnverifiedTests: AppTestCase, MediaTest {
             .expect(.forbidden)
             .test()
     }
-    
+
     func testListRepositoriesWithUnverifiedModelsWithoutTokenFails() async throws {
         try app
             .describe("List repositories with unverified without token should fail")
@@ -106,16 +98,16 @@ final class MediaApiListUnverifiedTests: AppTestCase, MediaTest {
             .expect(.unauthorized)
             .test()
     }
-    
+
     func testListUnverifiedDetailsForRepository() async throws {
         let moderatorToken = try await getToken(for: .moderator)
-        
+
         let language = try await createLanguage()
         let language2 = try await createLanguage()
         let deactivatedLanguage = try await createLanguage(activated: false)
-        
+
         let userId = try await getUser(role: .user).requireID()
-        
+
         // Create an unverified media
         let (mediaRepository, createdUnverifiedDetail, createdFile) = try await createNewMedia(languageId: language.requireID(), userId: userId)
         try await createdUnverifiedDetail.$language.load(on: app.db)
@@ -194,8 +186,8 @@ final class MediaApiListUnverifiedTests: AppTestCase, MediaTest {
             .expect(AppApi.Page<Media.Repository.ListUnverified>.self) { content in
                 XCTAssertEqual(content.metadata.total, content.items.count)
                 XCTAssertEqual(content.items.count, unverifiedMediaForRepositoryCount)
-                XCTAssertEqual(content.items.map { $0.detailId }.uniqued().count, unverifiedMediaForRepositoryCount)
-                XCTAssertEqual(content.items.map { $0.detailId }.uniqued().count, content.items.count)
+                XCTAssertEqual(content.items.map(\.detailId).uniqued().count, unverifiedMediaForRepositoryCount)
+                XCTAssertEqual(content.items.map(\.detailId).uniqued().count, content.items.count)
                 XCTAssertEqual(content.metadata.total, unverifiedMediaForRepositoryCount)
 
                 XCTAssert(content.items.contains { $0.detailId == createdUnverifiedDetail.id })
@@ -229,13 +221,13 @@ final class MediaApiListUnverifiedTests: AppTestCase, MediaTest {
             }
             .test()
     }
-    
+
     func testListUnverifiedDetailsForRepositoryAsUserFails() async throws {
         let userToken = try await getToken(for: .user)
-        
+
         // Create an unverified media
         let (mediaRepository, _, _) = try await createNewMedia()
-        
+
         try app
             .describe("List unverified media as user should fail")
             .get(mediaPath.appending("\(mediaRepository.requireID())/unverified/"))
@@ -243,11 +235,11 @@ final class MediaApiListUnverifiedTests: AppTestCase, MediaTest {
             .expect(.forbidden)
             .test()
     }
-    
+
     func testListUnverifiedDetailsForRepositoryWithoutTokenFails() async throws {
         // Create an unverified media
         let (mediaRepository, _, _) = try await createNewMedia()
-        
+
         try app
             .describe("List unverified media without token should fail")
             .get(mediaPath.appending("\(mediaRepository.requireID())/unverified/"))

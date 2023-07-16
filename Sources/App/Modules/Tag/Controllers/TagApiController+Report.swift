@@ -1,13 +1,6 @@
-//
-//  TagApiController+Report.swift
-//  
-//
-//  Created by niklhut on 08.06.22.
-//
-
-import Vapor
-import Fluent
 import AppApi
+import Fluent
+import Vapor
 
 extension Tag.Detail.Detail: InitializableById {
     init?(id: UUID?, db: Database) async throws {

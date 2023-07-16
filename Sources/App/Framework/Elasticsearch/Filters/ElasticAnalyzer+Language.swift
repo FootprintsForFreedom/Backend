@@ -1,17 +1,10 @@
-//
-//  ElasticAnalyzer+Language.swift
-//  
-//
-//  Created by niklhut on 07.10.22.
-//
-
 import Foundation
 import ISO639
 
 extension ISO639.Language {
     /// Language analyzers according to the [elasticsearch documentation](https://www.elastic.co/guide/en/elasticsearch/reference/8.4/analysis-lang-analyzer.html).
     var analyzer: ElasticAnalyzer {
-        switch self.alpha1 {
+        switch alpha1 {
         case .ar: return .init(.lowercase(), .decimalDigit, .stop(.arabic), .normalization(.arabic), .stemmer(.arabic), .wordDelimiterGraph)
         case .hy: return .init(.lowercase(), .stop(.armenian), .stemmer(.armenian), .wordDelimiterGraph)
         case .eu: return .init(.lowercase(), .stop(.basque), .stemmer(.basque), .wordDelimiterGraph)

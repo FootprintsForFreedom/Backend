@@ -1,10 +1,3 @@
-//
-//  AsyncValidatorBuilder.swift
-//  
-//
-//  Created by niklhut on 01.02.22.
-//
-
 /// Allows to return an enum of ``AsyncValidator``s via result builders.
 @resultBuilder
 public enum AsyncValidatorBuilder {

@@ -1,14 +1,7 @@
-//
-//  UserApiGetOwnUserTests.swift
-//  
-//
-//  Created by niklhut on 04.02.22.
-//
-
-@testable import App
-import XCTVapor
 import Fluent
 import Spec
+import XCTVapor
+@testable import App
 
 final class UserApiGetOwnUserTests: AppTestCase, UserTest {
     private func createNewUserWithToken(
@@ -19,18 +12,18 @@ final class UserApiGetOwnUserTests: AppTestCase, UserTest {
         verified: Bool = false,
         role: User.Role = .user
     ) async throws -> (user: UserAccountModel, token: String) {
-        let user = UserAccountModel(name: name, email: email, school: school, password: try app.password.hash(password), verified: verified, role: role)
+        let user = try UserAccountModel(name: name, email: email, school: school, password: app.password.hash(password), verified: verified, role: role)
         try await user.create(on: app.db)
-        
+
         let token = try user.generateToken()
         try await token.create(on: app.db)
-        
+
         return (user, token.value)
     }
-    
+
     func testGetOwnUser() async throws {
         let (user, token) = try await createNewUserWithToken()
-        
+
         try app
             .describe("Get own user should return authenticated user")
             .get(usersPath.appending("me"))
@@ -44,7 +37,7 @@ final class UserApiGetOwnUserTests: AppTestCase, UserTest {
                 XCTAssertEqual(content.school, user.school)
                 XCTAssertEqual(content.verified, user.verified)
                 XCTAssertEqual(content.role, user.role)
-        }
-        .test()
+            }
+            .test()
     }
 }

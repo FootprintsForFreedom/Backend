@@ -1,21 +1,14 @@
-//
-//  TagApiUpdateTests.swift
-//  
-//
-//  Created by niklhut on 29.05.22.
-//
-
-@testable import App
-import XCTVapor
 import Fluent
 import Spec
+import XCTVapor
+@testable import App
 
 final class TagApiUpdateTests: AppTestCase, TagTest {
     private func getTagUpdateContent(
         title: String = "New Tag title \(UUID())",
         updatedTitle: String = "Updated Title",
-        keywords: [String] = (1...5).map { _ in String(Int.random(in: 10...100)) }, // array with 5 random numbers between 10 and 100
-        updatedKeywords: [String] = (1...5).map { _ in String(Int.random(in: 10...100)) },
+        keywords: [String] = (1 ... 5).map { _ in String(Int.random(in: 10 ... 100)) }, // array with 5 random numbers between 10 and 100
+        updatedKeywords: [String] = (1 ... 5).map { _ in String(Int.random(in: 10 ... 100)) },
         verified: Bool = false,
         languageId: UUID? = nil,
         updateLanguageCode: String? = nil
@@ -26,7 +19,7 @@ final class TagApiUpdateTests: AppTestCase, TagTest {
             verified: verified,
             languageId: languageId
         )
-        
+
         if updateLanguageCode == nil {
             try await detail.$language.load(on: app.db)
         }
@@ -37,11 +30,11 @@ final class TagApiUpdateTests: AppTestCase, TagTest {
         )
         return (repository, detail, updateContent)
     }
-    
+
     func testSuccessfulUpdateTag() async throws {
         let token = try await getToken(for: .user, verified: true)
         let (repository, _, updateContent) = try await getTagUpdateContent(verified: true)
-        
+
         try app
             .describe("Update tag should return ok")
             .put(tagPath.appending(repository.requireID().uuidString))
@@ -58,22 +51,22 @@ final class TagApiUpdateTests: AppTestCase, TagTest {
                 XCTAssertEqual(content.languageCode, updateContent.languageCode)
             }
             .test()
-        
+
         // Test the new tag detail was created correctly
         let newTagDetail = try await repository.$details
             .query(on: app.db)
             .sort(\.$updatedAt, .descending)
             .first()!
-        
+
         XCTAssertNotNil(newTagDetail.id)
         XCTAssertNil(newTagDetail.verifiedAt)
     }
-    
+
     func testSuccessfulUpdateTagWithDuplicateTitle() async throws {
         let token = try await getToken(for: .user, verified: true)
         let title = "My new title \(UUID())"
         let (repository, _, updateContent) = try await getTagUpdateContent(title: title, updatedTitle: title, verified: true)
-        
+
         try app
             .describe("Update tag should return ok")
             .put(tagPath.appending(repository.requireID().uuidString))
@@ -90,22 +83,22 @@ final class TagApiUpdateTests: AppTestCase, TagTest {
                 XCTAssertEqual(content.languageCode, updateContent.languageCode)
             }
             .test()
-        
+
         // Test the new tag detail was created correctly
         let newTagDetail = try await repository.$details
             .query(on: app.db)
             .sort(\.$updatedAt, .descending)
             .first()!
-        
+
         XCTAssertNotNil(newTagDetail.id)
         XCTAssertNil(newTagDetail.verifiedAt)
     }
-    
+
     func testSuccessfulUpdateWithNewLanguage() async throws {
         let token = try await getToken(for: .user, verified: true)
         let secondLanguage = try await createLanguage()
         let (repository, _, updateContent) = try await getTagUpdateContent(verified: true, updateLanguageCode: secondLanguage.languageCode)
-        
+
         try app
             .describe("Update tag with new language should return ok")
             .put(tagPath.appending(repository.requireID().uuidString))
@@ -122,21 +115,21 @@ final class TagApiUpdateTests: AppTestCase, TagTest {
                 XCTAssertEqual(content.languageCode, updateContent.languageCode)
             }
             .test()
-        
+
         // Test the new tag detail was created correctly
         let newTagDetail = try await repository.$details
             .query(on: app.db)
             .sort(\.$updatedAt, .descending)
             .first()!
-        
+
         XCTAssertNotNil(newTagDetail.id)
         XCTAssertNil(newTagDetail.verifiedAt)
     }
-    
+
     func testUpdateTagAsUnverifiedUserFails() async throws {
         let token = try await getToken(for: .user, verified: false)
         let (repository, _, updateContent) = try await getTagUpdateContent(verified: true)
-        
+
         try app
             .describe("Update tag as unverified user should fail")
             .put(tagPath.appending(repository.requireID().uuidString))
@@ -145,10 +138,10 @@ final class TagApiUpdateTests: AppTestCase, TagTest {
             .expect(.forbidden)
             .test()
     }
-    
+
     func testUpdateTagWithoutTokenFails() async throws {
         let (repository, _, updateContent) = try await getTagUpdateContent(verified: true)
-        
+
         try app
             .describe("Update tag as unverified user should fail")
             .put(tagPath.appending(repository.requireID().uuidString))
@@ -156,11 +149,11 @@ final class TagApiUpdateTests: AppTestCase, TagTest {
             .expect(.unauthorized)
             .test()
     }
-    
+
     func testUpdateTagNeedsValidTitle() async throws {
         let token = try await getToken(for: .user, verified: true)
         let (repository, _, updateContent) = try await getTagUpdateContent(updatedTitle: "", verified: true)
-        
+
         try app
             .describe("Update tag should require valid title")
             .put(tagPath.appending(repository.requireID().uuidString))
@@ -169,12 +162,12 @@ final class TagApiUpdateTests: AppTestCase, TagTest {
             .expect(.badRequest)
             .test()
     }
-    
+
     func testUpdateTagIgnoresEmptyKeywords() async throws {
         let token = try await getToken(for: .user, verified: true)
         let (repository, detail, updateContent) = try await getTagUpdateContent(updatedKeywords: ["hallo", "test", "", "\n", "was ist das", " "], verified: true)
         try await detail.$language.load(on: app.db)
-        
+
         try app
             .describe("Update tag should ignore invalid keywords")
             .put(tagPath.appending(repository.requireID().uuidString))
@@ -191,12 +184,12 @@ final class TagApiUpdateTests: AppTestCase, TagTest {
             }
             .test()
     }
-    
+
     func testUpdateTagNeedsValidLangaugeCode() async throws {
         let token = try await getToken(for: .user, verified: true)
         let (repository1, _, updateContent1) = try await getTagUpdateContent(verified: true, updateLanguageCode: "")
         let (repository2, _, updateContent2) = try await getTagUpdateContent(verified: true, updateLanguageCode: "zz")
-        
+
         try app
             .describe("Update media should need valid language code or fail")
             .put(tagPath.appending(repository1.requireID().uuidString))
@@ -204,7 +197,7 @@ final class TagApiUpdateTests: AppTestCase, TagTest {
             .bearerToken(token)
             .expect(.badRequest)
             .test()
-        
+
         try app
             .describe("Update media should need valid language code or fail")
             .put(tagPath.appending(repository2.requireID().uuidString))

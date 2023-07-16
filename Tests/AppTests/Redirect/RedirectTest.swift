@@ -1,19 +1,12 @@
-//
-//  RedirectTest.swift
-//  
-//
-//  Created by niklhut on 17.01.23.
-//
-
-@testable import App
-import XCTVapor
 import Fluent
+import XCTVapor
+@testable import App
 
 protocol RedirectTest: LanguageTest { }
 
 extension RedirectTest {
     var redirectPath: String { "api/v1/redirects/" }
-    
+
     func createNewRedirect(
         source: String = "this/is/source/\(UUID())",
         destination: String = "and/it/goes/to/\(UUID())"

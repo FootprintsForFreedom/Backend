@@ -1,13 +1,6 @@
-//
-//  CleanupSoftDeletedModelsJob.swift
-//  
-//
-//  Created by niklhut on 13.06.22.
-//
-
-import Vapor
 import Fluent
 import Queues
+import Vapor
 
 /// A job which cleans up soft deleted models after a certain time..
 struct CleanupSoftDeletedModelsJob: AsyncScheduledJob {
@@ -18,14 +11,13 @@ struct CleanupSoftDeletedModelsJob: AsyncScheduledJob {
     /// - Parameters:
     ///   - modelType: The type of the model whose soft deleted models are to be deleted.
     ///   - db: The database on which to find and delete the soft deleted models.
-    func cleanupSoftDeleted<Model>(_ modelType: Model.Type, on app: Application) async throws where Model: Timestamped {
+    func cleanupSoftDeleted(_ modelType: (some Timestamped).Type, on app: Application) async throws {
         /// Get the soft deleted lifetime or return.
         guard let softDeletedLifetime = Environment.softDeletedLifetime else {
             return
         }
         let dayInSeconds = 60 * 60 * 24
-        
-        
+
         if modelType is MediaFileModel.Type {
             try await modelType
                 .query(on: app.db)
@@ -47,7 +39,7 @@ struct CleanupSoftDeletedModelsJob: AsyncScheduledJob {
                 .delete(force: true) // and delete them
         }
     }
-    
+
     func run(context: QueueContext) async throws {
         /// All model types to cleanup.
         let timestampedTypes: [any Timestamped.Type] = [
@@ -64,9 +56,9 @@ struct CleanupSoftDeletedModelsJob: AsyncScheduledJob {
             WaypointReportModel.self,
             StaticContentRepositoryModel.self,
             StaticContentDetailModel.self,
-            RedirectModel.self
+            RedirectModel.self,
         ]
-        
+
         try await timestampedTypes.asyncForEach { timestampedType in
             try await cleanupSoftDeleted(timestampedType, on: context.application)
         }

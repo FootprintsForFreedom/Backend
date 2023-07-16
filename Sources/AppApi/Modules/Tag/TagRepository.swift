@@ -1,10 +1,3 @@
-//
-//  TagRepository.swift
-//  
-//
-//  Created by niklhut on 26.05.22.
-//
-
 import Foundation
 import SwiftDiff
 
@@ -28,7 +21,7 @@ public extension Tag.Repository {
         public let keywords: [String]
         /// The language code for the tag title and keywords.
         public let languageCode: String
-        
+
         /// Creates a list unverified tags object.
         /// - Parameters:
         ///   - detailId: Id uniquely identifying the tag detail object.
@@ -44,7 +37,7 @@ public extension Tag.Repository {
             self.languageCode = languageCode
         }
     }
-    
+
     /// Used to list unverified tags.
     struct ListUnverifiedRelation: Codable {
         /// Id uniquely identifying the tag repository.
@@ -57,7 +50,7 @@ public extension Tag.Repository {
         public let status: Status
         /// The language code for the tag title and keywords.
         public let languageCode: String
-        
+
         /// Creates a list unverified tags object.
         /// - Parameters:
         ///   - detailId: Id uniquely identifying the tag detail object.
@@ -73,7 +66,7 @@ public extension Tag.Repository {
             self.languageCode = languageCode
         }
     }
-    
+
     /// Used to detail changes between two tag objects.
     struct Changes: Codable {
         /// The differences between the titles of the detail objects.
@@ -88,7 +81,7 @@ public extension Tag.Repository {
         public let fromUser: User.Account.Detail?
         /// The user who created the destination detail object.
         public let toUser: User.Account.Detail?
-        
+
         /// Creates a tag changes object.
         /// - Parameters:
         ///   - titleDiff: The differences between the titles of the detail objects.

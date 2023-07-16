@@ -1,12 +1,5 @@
-//
-//  File.swift
-//  
-//
-//  Created by niklhut on 27.08.22.
-//
-
-import Vapor
 import Fluent
+import Vapor
 
 /// A repository detail model with a title, slug and language.
 ///
@@ -44,8 +37,8 @@ extension TitledDetailModel {
             .filter(\._$verifiedAt != nil)
             .sort(\._$verifiedAt, sortDirection)
             .first()
-        
-        if let verifiedDetail = verifiedDetail {
+
+        if let verifiedDetail {
             return verifiedDetail
         } else if needsToBeVerified == false {
             return try await Self
@@ -60,7 +53,7 @@ extension TitledDetailModel {
             return nil
         }
     }
-    
+
     /// Gets a detail model for the repository.
     ///
     /// This function always returns a verified detail when it exists, if `needsToBeVerified` is false it returns an unverified model when no verified detail exists, if false it returns nil.
@@ -106,8 +99,8 @@ extension ChildrenProperty where From: RepositoryModel, To: TitledDetailModel {
             .sort(\._$verifiedAt, sortDirection)
             .filter(\._$verifiedAt != nil)
             .first()
-        
-        if let verifiedDetail = verifiedDetail {
+
+        if let verifiedDetail {
             return verifiedDetail
         } else if needsToBeVerified == false {
             return try await projectedValue
@@ -121,7 +114,7 @@ extension ChildrenProperty where From: RepositoryModel, To: TitledDetailModel {
             return nil
         }
     }
-    
+
     /// Gets the first detail model matching the requirements..
     ///
     /// This function always returns a verified detail when it exists, if `needsToBeVerified` is false it returns an unverified model when no verified detail exists, if false it returns nil.

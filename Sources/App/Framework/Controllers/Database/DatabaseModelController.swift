@@ -1,21 +1,14 @@
-//
-//  DatabaseModelController.swift
-//  
-//
-//  Created by niklhut on 01.02.22.
-//
-
-import Vapor
 import Fluent
+import Vapor
 
 /// Streamlines controlling database models.
 public protocol DatabaseModelController: ModelController {
     /// The database model.
     associatedtype DatabaseModel: DatabaseModelInterface
-    
+
     /// The module name.
     static var moduleName: String { get }
-    
+
     /// Finds a model by its id on the database.
     /// - Parameters:
     ///   - id: The model id.
@@ -26,7 +19,7 @@ public protocol DatabaseModelController: ModelController {
 
 extension DatabaseModelController {
     public static var moduleName: String { DatabaseModel.Module.identifier.capitalized }
-    
+
     func findBy(_ id: UUID, on db: Database) async throws -> DatabaseModel {
         guard let model = try await DatabaseModel.find(id, on: db) else {
             throw Abort(.notFound)

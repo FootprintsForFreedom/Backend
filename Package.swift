@@ -4,7 +4,7 @@ import PackageDescription
 let package = Package(
     name: "Backend",
     platforms: [
-        .macOS(.v13)
+        .macOS(.v13),
     ],
     products: [
         .library(name: "AppApi", targets: ["AppApi"]),
@@ -49,13 +49,13 @@ let package = Package(
                 .product(name: "ElasticsearchNIOClient", package: "elasticsearch-nio-client"),
                 .product(name: "ISO639", package: "ISO639.swift"),
                 .product(name: "MMDB", package: "swift-mmdb"),
-                .target(name: "AppApi")
+                .target(name: "AppApi"),
             ],
             swiftSettings: [
                 // Enable better optimizations when building in Release configuration. Despite the use of
                 // the `.unsafeFlags` construct required by SwiftPM, this flag is recommended for Release
                 // builds. See <https://github.com/swift-server/guides/blob/main/docs/building.md#building-for-production> for details.
-                .unsafeFlags(["-cross-module-optimization"], .when(configuration: .release))
+                .unsafeFlags(["-cross-module-optimization"], .when(configuration: .release)),
             ]
         ),
         .testTarget(
@@ -67,10 +67,11 @@ let package = Package(
                 .product(name: "FluentSQLiteDriver", package: "fluent-sqlite-driver"),
             ],
             resources: [
-                .process("Resources")
-            ]),
+                .process("Resources"),
+            ]
+        ),
         .testTarget(name: "AppApiTests", dependencies: [
             .target(name: "AppApi"),
-        ])
+        ]),
     ]
 )

@@ -1,14 +1,7 @@
-//
-//  TagApiVerifyReportTests.swift
-//  
-//
-//  Created by niklhut on 08.06.22.
-//
-
-@testable import App
-import XCTVapor
 import Fluent
 import Spec
+import XCTVapor
+@testable import App
 
 final class TagApiVerifyReportTests: AppTestCase, TagTest {
     func testSuccessfulVerifyReport() async throws {
@@ -16,7 +9,7 @@ final class TagApiVerifyReportTests: AppTestCase, TagTest {
         let tag = try await createNewTag()
         let report = try await createNewTagReport(tag: tag)
         try await tag.detail.$language.load(on: app.db)
-        
+
         try app
             .describe("Verify report as moderator should be successful and return ok")
             .post(tagPath.appending("\(tag.repository.requireID())/reports/verify/\(report.requireID())"))
@@ -39,13 +32,13 @@ final class TagApiVerifyReportTests: AppTestCase, TagTest {
             }
             .test()
     }
-    
+
     func testSuccessfulVerifyReportWithDeletedVisbleDetail() async throws {
         let moderatorToken = try await getToken(for: .moderator)
         let tag = try await createNewTag()
         let report = try await createNewTagReport(tag: tag)
         try await tag.detail.delete(force: true, on: app.db)
-        
+
         try app
             .describe("Verify report as moderator should be successful and return ok")
             .post(tagPath.appending("\(tag.repository.requireID())/reports/verify/\(report.requireID())"))
@@ -60,13 +53,13 @@ final class TagApiVerifyReportTests: AppTestCase, TagTest {
             }
             .test()
     }
-    
+
     func testVerifyReportAsUserFails() async throws {
         let token = try await getToken(for: .user)
         let tag = try await createNewTag()
         let report = try await createNewTagReport(tag: tag)
         try await tag.detail.$language.load(on: app.db)
-        
+
         try app
             .describe("Verify report as user should fail")
             .post(tagPath.appending("\(tag.repository.requireID())/reports/verify/\(report.requireID())"))
@@ -74,25 +67,25 @@ final class TagApiVerifyReportTests: AppTestCase, TagTest {
             .expect(.forbidden)
             .test()
     }
-    
+
     func testVerifyReportWithoutTokenFails() async throws {
         let tag = try await createNewTag()
         let report = try await createNewTagReport(tag: tag)
         try await tag.detail.$language.load(on: app.db)
-        
+
         try app
             .describe("Verify report without token should fail")
             .post(tagPath.appending("\(tag.repository.requireID())/reports/verify/\(report.requireID())"))
             .expect(.unauthorized)
             .test()
     }
-    
+
     func testVerifyReportWithAlreadyVerifiedReportFails() async throws {
         let moderatorToken = try await getToken(for: .moderator)
         let tag = try await createNewTag()
         let report = try await createNewTagReport(tag: tag, verifiedAt: Date())
         try await tag.detail.$language.load(on: app.db)
-        
+
         try app
             .describe("Verify report as moderator should be successful and return ok")
             .post(tagPath.appending("\(tag.repository.requireID())/reports/verify/\(report.requireID())"))

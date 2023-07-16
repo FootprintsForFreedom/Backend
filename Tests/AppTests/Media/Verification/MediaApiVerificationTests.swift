@@ -1,21 +1,14 @@
-//
-//  MediaApiVerificationTests.swift
-//  
-//
-//  Created by niklhut on 18.05.22.
-//
-
-@testable import App
-import XCTVapor
 import Fluent
 import Spec
+import XCTVapor
+@testable import App
 
 final class MediaApiVerificationTests: AppTestCase, MediaTest {
     func testSuccessfulVerifyMedia() async throws {
         let moderatorToken = try await getToken(for: .moderator)
         let (repository, detail, file) = try await createNewMedia()
         try await detail.$language.load(on: app.db)
-        
+
         try app
             .describe("Verify media as moderator should be successful and return ok")
             .post(mediaPath.appending("\(repository.requireID())/verify/\(detail.requireID())"))
@@ -35,11 +28,11 @@ final class MediaApiVerificationTests: AppTestCase, MediaTest {
             }
             .test()
     }
-    
+
     func testVerifyMediaWithDeactivatedLanguageFails() async throws {
         let language = try await createLanguage()
         let (repository, detail, _) = try await createNewMedia(languageId: language.requireID())
-        
+
         let adminToken = try await getToken(for: .admin)
         try app
             .describe("Deactivate language as admin should return ok")
@@ -48,7 +41,7 @@ final class MediaApiVerificationTests: AppTestCase, MediaTest {
             .expect(.ok)
             .expect(.json)
             .test()
-        
+
         try app
             .describe("Verify media with deactivated language should fail")
             .post(mediaPath.appending("\(repository.requireID())/verify/\(detail.requireID())"))
@@ -56,11 +49,11 @@ final class MediaApiVerificationTests: AppTestCase, MediaTest {
             .expect(.badRequest)
             .test()
     }
-    
+
     func testVerifyMediaAsUserFails() async throws {
         let userToken = try await getToken(for: .user)
         let (repository, detail, _) = try await createNewMedia()
-        
+
         try app
             .describe("Verify media as user should fail")
             .post(mediaPath.appending("\(repository.requireID())/verify/\(detail.requireID())"))
@@ -68,21 +61,21 @@ final class MediaApiVerificationTests: AppTestCase, MediaTest {
             .expect(.forbidden)
             .test()
     }
-    
+
     func testVerifyMediaWithoutTokenFails() async throws {
         let (repository, detail, _) = try await createNewMedia()
-        
+
         try app
             .describe("Verify media wihtout token should fail")
             .post(mediaPath.appending("\(repository.requireID())/verify/\(detail.requireID())"))
             .expect(.unauthorized)
             .test()
     }
-    
+
     func testVerifyMediaWithAlreadyVerifiedMediaFails() async throws {
         let moderatorToken = try await getToken(for: .moderator)
         let (repository, detail, _) = try await createNewMedia(verified: true)
-        
+
         try app
             .describe("Verify media for already verified media should fail")
             .post(mediaPath.appending("\(repository.requireID())/verify/\(detail.requireID())"))

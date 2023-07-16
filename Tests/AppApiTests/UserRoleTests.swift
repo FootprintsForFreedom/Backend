@@ -1,12 +1,5 @@
-//
-//  UserRoleTests.swift
-//  
-//
-//  Created by niklhut on 07.02.22.
-//
-
-@testable import AppApi
 import XCTest
+@testable import AppApi
 
 final class UserRoleTests: XCTestCase {
     func testRoleHierachy() {

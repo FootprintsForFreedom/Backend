@@ -1,16 +1,9 @@
-//
-//  UserApiPatchTests.swift
-//  
-//
-//  Created by niklhut on 24.05.20.
-//
-
-@testable import App
-import XCTVapor
 import Fluent
 import Spec
+import XCTVapor
+@testable import App
 
-extension User.Account.Patch: Content {}
+extension User.Account.Patch: Content { }
 
 final class UserApiPatchTests: AppTestCase, UserTest {
     private func getUserPatchContent(
@@ -29,7 +22,7 @@ final class UserApiPatchTests: AppTestCase, UserTest {
             verified: false,
             role: .user
         )
-        
+
         let patchedUser = User.Account.Patch(
             name: patchedName,
             email: patchedEmail,
@@ -38,10 +31,10 @@ final class UserApiPatchTests: AppTestCase, UserTest {
         )
         return (user, token, patchedUser)
     }
-    
+
     func testEmptyPatchUserDoesNothing() async throws {
         let (user, token, patchContent) = try await getUserPatchContent()
-        
+
         try app
             .describe("Patch username should return ok")
             .patch(usersPath.appending(user.requireID().uuidString))
@@ -59,10 +52,10 @@ final class UserApiPatchTests: AppTestCase, UserTest {
             }
             .test()
     }
-    
+
     func testSuccessfulPatchUserName() async throws {
         let (user, token, patchContent) = try await getUserPatchContent(patchedName: "Patched Test User")
-        
+
         try app
             .describe("Patch username should return ok")
             .patch(usersPath.appending(user.requireID().uuidString))
@@ -80,10 +73,10 @@ final class UserApiPatchTests: AppTestCase, UserTest {
             }
             .test()
     }
-    
+
     func testSuccessfulPatchUserEmail() async throws {
         let (user, token, patchContent) = try await getUserPatchContent(patchedEmail: "patched.test-user\(UUID())@example.com")
-        
+
         try app
             .describe("Patch user email should return ok")
             .patch(usersPath.appending(user.requireID().uuidString))
@@ -101,13 +94,12 @@ final class UserApiPatchTests: AppTestCase, UserTest {
             }
             .test()
     }
-    
-    
+
     func testSuccessfulPatchUserSchoolFromNilToValue() async throws {
         let (user, token, patchContent) = try await getUserPatchContent(shouldPatchSchool: true, patchedSchool: "Meine Schule")
         XCTAssertNil(user.school)
         XCTAssertNotNil(patchContent.school)
-        
+
         try app
             .describe("Patch user school from nil to value should return ok")
             .patch(usersPath.appending(user.requireID().uuidString))
@@ -125,12 +117,12 @@ final class UserApiPatchTests: AppTestCase, UserTest {
             }
             .test()
     }
-    
+
     func testSuccessfulPatchUserSchoolFromValueToValue() async throws {
         let (user, token, patchContent) = try await getUserPatchContent(school: "Meine Schule", shouldPatchSchool: true, patchedSchool: "Meine neue Schule")
         XCTAssertNotNil(user.school)
         XCTAssertNotNil(patchContent.school)
-        
+
         try app
             .describe("Patch user school from value to value should return ok")
             .patch(usersPath.appending(user.requireID().uuidString))
@@ -148,12 +140,12 @@ final class UserApiPatchTests: AppTestCase, UserTest {
             }
             .test()
     }
-    
+
     func testSuccessfulPatchUserSchoolFromValueToNil() async throws {
         let (user, token, patchContent) = try await getUserPatchContent(school: "Meine Schule", shouldPatchSchool: true)
         XCTAssertNotNil(user.school)
         XCTAssertNil(patchContent.school)
-        
+
         try app
             .describe("Patch user email should return ok")
             .patch(usersPath.appending(user.requireID().uuidString))
@@ -171,11 +163,11 @@ final class UserApiPatchTests: AppTestCase, UserTest {
             }
             .test()
     }
-    
+
     func testSuccessfulPatchUserFromDifferentAdminUser() async throws {
         let (user, _, patchContent) = try await getUserPatchContent(patchedName: "Patched Test User")
         let moderatorToken = try await getToken(for: .admin)
-        
+
         try app
             .describe("Patch username from other admin user should return ok")
             .patch(usersPath.appending(user.requireID().uuidString))
@@ -192,13 +184,12 @@ final class UserApiPatchTests: AppTestCase, UserTest {
                 XCTAssertEqual(content.role, user.role)
             }
             .test()
-        
     }
-    
+
     func testPatchUserFromDifferentModeratorUserFails() async throws {
         let (user, _, patchContent) = try await getUserPatchContent()
         let token = try await getToken(for: .moderator)
-        
+
         try app
             .describe("Patch user from other non admin user should fail")
             .patch(usersPath.appending(user.requireID().uuidString))
@@ -207,11 +198,11 @@ final class UserApiPatchTests: AppTestCase, UserTest {
             .expect(.forbidden)
             .test()
     }
-    
+
     func testPatchUserFromDifferentNormalUserFails() async throws {
         let (user, _, patchContent) = try await getUserPatchContent()
         let token = try await getToken(for: .user)
-        
+
         try app
             .describe("Patch user from other non admin user should fail")
             .patch(usersPath.appending(user.requireID().uuidString))
@@ -220,10 +211,10 @@ final class UserApiPatchTests: AppTestCase, UserTest {
             .expect(.forbidden)
             .test()
     }
-    
+
     func testPatchUserWithoutTokenFail() async throws {
         let (user, _, patchContent) = try await getUserPatchContent()
-        
+
         try app
             .describe("Patch user without bearer token fails")
             .patch(usersPath.appending(user.requireID().uuidString))
@@ -231,10 +222,10 @@ final class UserApiPatchTests: AppTestCase, UserTest {
             .expect(.unauthorized)
             .test()
     }
-    
+
     func testPatchUserNeedsValidName() async throws {
         let (user, token, patchContent) = try await getUserPatchContent(patchedName: "")
-        
+
         try app
             .describe("Patch user without valid name should fail")
             .patch(usersPath.appending(user.requireID().uuidString))
@@ -243,13 +234,13 @@ final class UserApiPatchTests: AppTestCase, UserTest {
             .expect(.badRequest)
             .test()
     }
-    
+
     func testPatchUserNeedsValidEmail() async throws {
         let userOne = try await getUserPatchContent(name: "Test User One", patchedEmail: "")
         let userTwo = try await getUserPatchContent(name: "Test User Two", patchedEmail: "test@test")
         let userThree = try await getUserPatchContent(name: "Test User Three", patchedEmail: "@test.com")
         let userFour = try await getUserPatchContent(name: "Test User Four", patchedEmail: "test.com")
-        
+
         try app
             .describe("Patch user without valid email should fail")
             .patch(usersPath.appending(userOne.model.requireID().uuidString))
@@ -257,7 +248,7 @@ final class UserApiPatchTests: AppTestCase, UserTest {
             .bearerToken(userOne.token)
             .expect(.badRequest)
             .test()
-        
+
         try app
             .describe("Patch user without valid email should fail")
             .patch(usersPath.appending(userTwo.model.requireID().uuidString))
@@ -265,7 +256,7 @@ final class UserApiPatchTests: AppTestCase, UserTest {
             .bearerToken(userTwo.token)
             .expect(.badRequest)
             .test()
-        
+
         try app
             .describe("Patch user without valid email should fail")
             .patch(usersPath.appending(userThree.model.requireID().uuidString))
@@ -273,7 +264,7 @@ final class UserApiPatchTests: AppTestCase, UserTest {
             .bearerToken(userThree.token)
             .expect(.badRequest)
             .test()
-        
+
         try app
             .describe("Patch user without valid email should fail")
             .patch(usersPath.appending(userFour.model.requireID().uuidString))
@@ -282,10 +273,10 @@ final class UserApiPatchTests: AppTestCase, UserTest {
             .expect(.badRequest)
             .test()
     }
-    
+
     func testPatchUserWithWrongPayloadFails() async throws {
         let (user, token, _) = try await getUserPatchContent()
-        
+
         try app
             .describe("Updating a user with wrong payload returns ok since required payload is optional")
             .patch(usersPath.appending(user.requireID().uuidString))
@@ -293,7 +284,7 @@ final class UserApiPatchTests: AppTestCase, UserTest {
             .bearerToken(token)
             .expect(.ok)
             .test()
-        
+
         try app
             .describe("User should not have changed")
             .get(usersPath.appending(user.requireID().uuidString))

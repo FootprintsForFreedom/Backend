@@ -1,12 +1,5 @@
-//
-//  DetailModel.swift
-//  
-//
-//  Created by niklhut on 26.05.22.
-//
-
-import Vapor
 import Fluent
+import Vapor
 
 /// A repository detail model.
 ///
@@ -14,20 +7,20 @@ import Fluent
 protocol DetailModel: DatabaseModelInterface, Timestamped {
     /// The type of the repository model to which the detail belongs.
     associatedtype Repository: RepositoryModel
-    
+
     /// The date when detail was verified..
     var verifiedAt: Date? { get set }
     /// The date when detail was verified.
     var _$verifiedAt: OptionalFieldProperty<Self, Date> { get }
-    
+
     /// The detail's repository.
     var repository: Repository { get }
     /// The detail's repository.
     var _$repository: ParentProperty<Self, Repository> { get }
-    
+
     /// The key path for the detail model on the repository.
     var ownKeyPathOnRepository: KeyPath<Repository, ChildrenProperty<Repository, Self>> { get }
-    
+
     /// The user who created the detail model.
     ///
     /// If the user was deleted after creating the detail model, the user is set to nil.
@@ -40,7 +33,7 @@ protocol DetailModel: DatabaseModelInterface, Timestamped {
 
 extension DetailModel {
     var ownKeyPathOnRepository: KeyPath<Repository, ChildrenProperty<Repository, Repository.Detail>> { \._$details }
-    
+
     /// Gets a detail model for a repository.
     ///
     /// This function always returns a verified detail when it exists, if `needsToBeVerified` is false it returns an unverified model when no verified detail exists, if false it returns nil.
@@ -62,8 +55,8 @@ extension DetailModel {
             .filter(\._$verifiedAt != nil)
             .sort(\._$verifiedAt, sortDirection)
             .first()
-        
-        if let verifiedDetail = verifiedDetail {
+
+        if let verifiedDetail {
             return verifiedDetail
         } else if needsToBeVerified == false {
             return try await Self
@@ -75,7 +68,7 @@ extension DetailModel {
             return nil
         }
     }
-    
+
     /// Gets a detail model for the repository.
     ///
     /// This function always returns a verified detail when it exists, if `needsToBeVerified` is false it returns an unverified model when no verified detail exists, if false it returns nil.
@@ -114,8 +107,8 @@ extension ChildrenProperty where From: RepositoryModel, To: DetailModel {
             .sort(\._$verifiedAt, sortDirection)
             .filter(\._$verifiedAt != nil)
             .first()
-        
-        if let verifiedDetail = verifiedDetail {
+
+        if let verifiedDetail {
             return verifiedDetail
         } else if needsToBeVerified == false {
             return try await projectedValue

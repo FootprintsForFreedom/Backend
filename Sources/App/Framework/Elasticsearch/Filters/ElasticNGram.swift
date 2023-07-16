@@ -1,10 +1,3 @@
-//
-//  ElasticNGram.swift
-//  
-//
-//  Created by niklhut on 07.10.22.
-//
-
 import Foundation
 
 /// Forms n-grams of specified lengths from a token.
@@ -13,16 +6,16 @@ import Foundation
 struct ElasticNGram: CustomElasticFilter {
     static var `default` = "ngram"
     var name: String
-    
+
     /// Minimum length of characters in a gram
     var minGram: Int
-    
+
     /// Maximum length of characters in a gram.
     var maxGram: Int
-    
+
     /// Emits original token when set to `true`.
     var preserveOriginal: Bool = false
-    
+
     /// Creates an elastic n-gram with the specified parameters.
     /// - Parameters:
     ///   - name: The filter's name.
@@ -35,15 +28,15 @@ struct ElasticNGram: CustomElasticFilter {
         self.maxGram = maxGram
         self.preserveOriginal = preserveOriginal
     }
-    
-    var json: [String : Any] {
+
+    var json: [String: Any] {
         [
             name: [
                 "type": Self.default,
                 "min_gram": minGram,
                 "max_gram": maxGram,
-                "preserve_original": preserveOriginal
-            ]
+                "preserve_original": preserveOriginal,
+            ],
         ]
     }
 }

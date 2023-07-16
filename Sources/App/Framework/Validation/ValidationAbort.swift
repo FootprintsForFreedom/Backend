@@ -1,10 +1,3 @@
-//
-//  ValidationAbort.swift
-//  
-//
-//  Created by niklhut on 01.02.22.
-//
-
 import Vapor
 
 /// Error thrown when the validation fails.
@@ -15,12 +8,12 @@ public struct ValidationAbort: AbortError {
     public var message: String?
     /// The  additional``ValidationErrorDetail``s.
     public var details: [ValidationErrorDetail]
-    
+
     /// The reason for the validation abort.
     public var reason: String { abort.reason }
     /// The status code for the validation abort.
     public var status: HTTPStatus { abort.status }
-    
+
     /// Initialize the validation abort with all parameters.
     /// - Parameters:
     ///   - abort: The abort error.

@@ -1,13 +1,6 @@
-//
-//  RepositoryController.swift
-//  
-//
-//  Created by niklhut on 26.05.22.
-//
-
 import Vapor
 
-public protocol RepositoryController: ModelController  {
+public protocol RepositoryController: ModelController {
     /// Gets the model slug from a request.
     /// - Parameter req: The request containing the model slug.
     /// - Returns: The model slug.

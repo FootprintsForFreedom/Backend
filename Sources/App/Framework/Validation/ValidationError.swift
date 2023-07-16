@@ -1,10 +1,3 @@
-//
-//  ValidationError.swift
-//  
-//
-//  Created by niklhut on 01.02.22.
-//
-
 import Vapor
 
 /// Protocol representing validation errors.
@@ -13,7 +6,7 @@ struct ValidationError: Codable {
     let message: String?
     /// The  additional``ValidationErrorDetail``s.
     let details: [ValidationErrorDetail]
-        
+
     /// Initializes a validation error with message and details.
     /// - Parameters:
     ///   - message:The error message  sent with the failed validation.
@@ -24,4 +17,4 @@ struct ValidationError: Codable {
     }
 }
 
-extension ValidationError: Content {}
+extension ValidationError: Content { }

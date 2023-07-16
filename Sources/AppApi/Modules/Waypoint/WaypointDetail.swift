@@ -1,10 +1,3 @@
-//
-//  WaypointDetail.swift
-//  
-//
-//  Created by niklhut on 17.02.22.
-//
-
 import Foundation
 
 public extension Waypoint {
@@ -29,8 +22,7 @@ public extension Waypoint.Detail {
         public let userLocation: Waypoint.Location
         /// A ``Page`` of ``Waypoint/Detail/List`` items near the user's location.
         public let items: Page<List>
-        
-        
+
         /// Used to list waypoint objects with a user location.
         /// - Parameters:
         ///   - userLocation: The location of the user sending the initial ``Waypoint/Request/GetList`` request.
@@ -40,7 +32,7 @@ public extension Waypoint.Detail {
             self.items = items
         }
     }
-    
+
     /// Used to list waypoint objects.
     struct List: Codable {
         /// Id uniquely identifying the waypoint repository.
@@ -55,7 +47,7 @@ public extension Waypoint.Detail {
         public let location: Waypoint.Location
         /// The language code for the waypoint title and description.
         public let languageCode: String
-        
+
         /// Creates a waypoint list object.
         /// - Parameters:
         ///   - id: Id uniquely identifying the waypoint repository.
@@ -73,7 +65,7 @@ public extension Waypoint.Detail {
             self.languageCode = languageCode
         }
     }
-    
+
     /// Used to detail waypoint objects.
     struct Detail: Codable {
         /// Id uniquely identifying the waypoint repository.
@@ -96,7 +88,7 @@ public extension Waypoint.Detail {
         public let detailId: UUID
         /// Id uniquely identifying the location object.
         public let locationId: UUID
-        
+
         /// Creates a waypoint detail object for everyone.
         /// - Parameters:
         ///   - id: Id uniquely identifying the waypoint repository.
@@ -122,7 +114,7 @@ public extension Waypoint.Detail {
             self.locationId = locationId
         }
     }
-    
+
     /// Used to create waypoint objects.
     struct Create: Codable {
         /// The waypoint title.
@@ -133,7 +125,7 @@ public extension Waypoint.Detail {
         public let location: Waypoint.Location
         /// The language code for the waypoint title and description.
         public let languageCode: String
-        
+
         /// Creates a waypoint create object.
         /// - Parameters:
         ///   - title: The waypoint title.
@@ -147,7 +139,7 @@ public extension Waypoint.Detail {
             self.languageCode = languageCode
         }
     }
-    
+
     /// Used to update waypoint objects.
     struct Update: Codable {
         /// The waypoint title.
@@ -156,7 +148,7 @@ public extension Waypoint.Detail {
         public let detailText: String
         /// The language code for the waypoint title and description.
         public let languageCode: String
-        
+
         /// Creates a waypoint update object.
         /// - Parameters:
         ///   - title: The waypoint title.
@@ -168,7 +160,7 @@ public extension Waypoint.Detail {
             self.languageCode = languageCode
         }
     }
-    
+
     /// Used to patch waypoint objects.
     struct Patch: Codable {
         /// The waypoint title.
@@ -179,7 +171,7 @@ public extension Waypoint.Detail {
         public let location: Waypoint.Location?
         /// The id of an existing waypoint. All parameters not set in this request will be taken from this waypoint.
         public let idForWaypointDetailToPatch: UUID
-        
+
         /// Creates a waypoint patch object
         /// - Parameters:
         ///   - title: The waypoint title.

@@ -1,10 +1,3 @@
-//
-//  UserAccount.swift
-//  
-//
-//  Created by niklhut on 01.02.22.
-//
-
 import Foundation
 
 public extension User {
@@ -21,7 +14,7 @@ public extension User.Account {
         public let email: String
         /// The password set by the user for his account.
         public let password: String
-        
+
         /// Creates a user login object.
         /// - Parameters:
         ///   - email: The user's email address.
@@ -31,38 +24,38 @@ public extension User.Account {
             self.password = password
         }
     }
-    
+
     /// Used to verify a user's email address.
     struct Verification: Codable {
         /// The verification token for the user email.
         public let token: String
-        
+
         /// Creates a user email verification object.
         /// - Parameter token: The verification token for the user email.
         public init(token: String) {
             self.token = token
         }
     }
-    
+
     /// Used to request a password reset.
     struct ResetPasswordRequest: Codable {
         /// The email address for the user who forgot his password.
         public let email: String
-        
+
         /// Creates a user reset password request object.
         /// - Parameter email: The email address for the user who forgot his password.
         public init(email: String) {
             self.email = email
         }
     }
-    
+
     /// Used to reset a user password.
     struct ResetPassword: Codable {
         /// The token for the user to reset his password.
         public let token: String
         /// The new password set by the user for his account.
         public let newPassword: String
-        
+
         /// Creates a user reset password object.
         /// - Parameters:
         ///   - token: The token for the user to reset his password.
@@ -72,14 +65,14 @@ public extension User.Account {
             self.newPassword = newPassword
         }
     }
-    
+
     /// Used to change a user password.
-    struct ChangePassword: Codable  {
+    struct ChangePassword: Codable {
         /// The current password set by the user for his account.
         public let currentPassword: String
         /// The new password set by the user for his account.
         public let newPassword: String
-        
+
         /// Creates a user change password object.
         /// - Parameters:
         ///   - currentPassword: The current password set by the user for his account.
@@ -89,19 +82,19 @@ public extension User.Account {
             self.newPassword = newPassword
         }
     }
-    
+
     /// Used to change a user's role.
     struct ChangeRole: Codable {
         /// The new role for the user. The new role cannot be higher than the role of the user initiating the role change.
         public let newRole: User.Role
-        
+
         /// Creates a user change role object.
         /// - Parameter newRole: The new role for the user. The new role cannot be higher than the role of the user initiating the role change.
         public init(newRole: User.Role) {
             self.newRole = newRole
         }
     }
-    
+
     /// Used to list users.
     struct List: Codable {
         /// Id uniquely identifying the user.
@@ -114,7 +107,7 @@ public extension User.Account {
         public let verified: Bool
         /// The user's role.
         public let role: User.Role
-        
+
         /// Creates a user list object.
         ///
         /// Since the list object contains sensitive details it should only be returned for moderators.
@@ -132,7 +125,7 @@ public extension User.Account {
             self.role = role
         }
     }
-    
+
     /// Used to detail users.
     struct Detail: Codable {
         /// Id uniquely identifying the user.
@@ -147,7 +140,7 @@ public extension User.Account {
         public let verified: Bool?
         /// The user's role.
         public let role: User.Role?
-        
+
         /// Creates a user detail object for everyone.
         /// - Parameters:
         ///   - id: Id uniquely identifying the user.
@@ -155,13 +148,13 @@ public extension User.Account {
         ///   - school: The school of the user.
         /// - Returns: A user detail object.
         public static func publicDetail(id: UUID, name: String, school: String?) -> Self {
-            return .init(
+            .init(
                 id: id,
                 name: name,
                 school: school
             )
         }
-        
+
         /// Creates a detail object for the user himself.
         /// - Parameters:
         ///   - id: Id uniquely identifying the user.
@@ -172,7 +165,7 @@ public extension User.Account {
         ///   - role: The user's role.
         /// - Returns: A user detail object.
         public static func ownDetail(id: UUID, name: String, email: String, school: String?, verified: Bool, role: User.Role) -> Self {
-            return .init(
+            .init(
                 id: id,
                 name: name,
                 email: email,
@@ -181,7 +174,7 @@ public extension User.Account {
                 role: role
             )
         }
-        
+
         /// Creates a detail object for an admin.
         /// - Parameters:
         ///   - id: Id uniquely identifying the user.
@@ -191,7 +184,7 @@ public extension User.Account {
         ///   - role: The user's role.
         /// - Returns: A user detail object.
         public static func adminDetail(id: UUID, name: String, school: String?, verified: Bool, role: User.Role) -> Self {
-            return .init(
+            .init(
                 id: id,
                 name: name,
                 school: school,
@@ -199,7 +192,7 @@ public extension User.Account {
                 role: role
             )
         }
-        
+
         /// Creates a user detail object for everyone.
         /// - Parameters:
         ///   - id: Id uniquely identifying the user.
@@ -209,11 +202,11 @@ public extension User.Account {
             self.id = id
             self.name = name
             self.school = school
-            self.email = nil
-            self.verified = nil
-            self.role = nil
+            email = nil
+            verified = nil
+            role = nil
         }
-        
+
         /// Creates a detail object for an admin.
         /// - Parameters:
         ///   - id: Id uniquely identifying the user.
@@ -227,9 +220,9 @@ public extension User.Account {
             self.school = school
             self.verified = verified
             self.role = role
-            self.email = nil
+            email = nil
         }
-        
+
         /// Creates a detail object for the user himself.
         /// - Parameters:
         ///   - id: Id uniquely identifying the user.
@@ -247,7 +240,7 @@ public extension User.Account {
             self.role = role
         }
     }
-    
+
     /// Used to create users.
     struct Create: Codable {
         /// The user name.
@@ -258,7 +251,7 @@ public extension User.Account {
         public let school: String?
         /// The password set by the user for his account.
         public let password: String
-        
+
         /// Creates a user create object.
         /// - Parameters:
         ///   - name: The user name.
@@ -272,7 +265,7 @@ public extension User.Account {
             self.password = password
         }
     }
-    
+
     /// Used to update users.
     struct Update: Codable {
         /// The user name.
@@ -281,7 +274,7 @@ public extension User.Account {
         public let email: String
         /// The school of the user. If no value is set the user's school will be set to no value.
         public let school: String?
-        
+
         /// Creates a user update object.
         /// - Parameters:
         ///   - name: The user name.
@@ -293,7 +286,7 @@ public extension User.Account {
             self.school = school
         }
     }
-    
+
     /// Used to patch users.
     struct Patch: Codable {
         /// The user name.
@@ -306,7 +299,7 @@ public extension User.Account {
         public let setSchool: Bool?
         /// The school of the user.
         public let school: String?
-        
+
         /// Creates a user patch object.
         /// - Parameters:
         ///   - name: The user name.

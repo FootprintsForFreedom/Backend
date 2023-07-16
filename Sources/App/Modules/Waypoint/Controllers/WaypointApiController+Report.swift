@@ -1,13 +1,6 @@
-//
-//  WaypointApiController+Report.swift
-//  
-//
-//  Created by niklhut on 08.06.22.
-//
-
-import Vapor
-import Fluent
 import AppApi
+import Fluent
+import Vapor
 
 extension Waypoint.Detail.Detail: InitializableById {
     init?(id: UUID?, db: Database) async throws {
@@ -19,9 +12,9 @@ extension Waypoint.Detail.Detail: InitializableById {
             throw Abort(.badRequest)
         }
         try await detail.$language.load(on: db)
-        
+
         let allLanguageCodesByPriority = try await LanguageModel.languageCodesByPriority(preferredLanguageCode: detail.language.languageCode, on: db)
-        
+
         self = try await .init(
             id: repository.requireID(),
             title: detail.title,

@@ -1,10 +1,3 @@
-//
-//  WaypointRequest.swift
-//  
-//
-//  Created by niklhut on 31.01.23.
-//
-
 import Foundation
 
 public extension Waypoint {
@@ -23,7 +16,7 @@ public extension Waypoint.Request {
         public let latitude: Double?
         /// The longitude of the area in which the user is. If unavailable set to nil.
         public let longitude: Double?
-        
+
         /// Creates a waypoint get list request object.
         /// - Parameters:
         ///   - latitude: The latitude of the area in which the user is. If unavailable set to nil.
@@ -33,7 +26,7 @@ public extension Waypoint.Request {
             self.longitude = longitude
         }
     }
-    
+
     /// Used to request a list  of waypoint objects inside a given area.
     ///
     /// The area is limited by two corner coordinates.
@@ -46,7 +39,7 @@ public extension Waypoint.Request {
         public let bottomRightLatitude: Double
         /// The bottom right longitude of the relevant area.
         public let bottomRightLongitude: Double
-        
+
         /// Creates a waypoint get in range request object.
         /// - Parameters:
         ///   - topLeftLatitude: The top left latitude of the relevant area.

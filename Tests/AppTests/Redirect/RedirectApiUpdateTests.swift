@@ -1,14 +1,7 @@
-//
-//  RedirectApiUpdateTests.swift
-//  
-//
-//  Created by niklhut on 22.01.23.
-//
-
-@testable import App
-import XCTVapor
 import Fluent
 import Spec
+import XCTVapor
+@testable import App
 
 final class RedirectApiUpdateTests: AppTestCase, RedirectTest {
     private func getRedirectUpdateContent(
@@ -21,10 +14,10 @@ final class RedirectApiUpdateTests: AppTestCase, RedirectTest {
         let updateContent = Redirect.Detail.Update(source: updatedSource, destination: updatedDestination)
         return (redirect, updateContent)
     }
-    
+
     func testSuccessfulUpdateRedirectAsAdmin() async throws {
         let token = try await getToken(for: .admin, verified: true)
-        
+
         let (redirect, updateContent) = try await getRedirectUpdateContent()
         try app
             .describe("Update redirect as admin should return ok")
@@ -38,7 +31,7 @@ final class RedirectApiUpdateTests: AppTestCase, RedirectTest {
                 XCTAssertEqual(content.destination, updateContent.destination)
             }
             .test()
-        
+
         let (redirect2, updateContent2) = try await getRedirectUpdateContent(updatedSource: "hello\n\(UUID())")
         try app
             .describe("Update redirect as admin should return ok")
@@ -52,7 +45,7 @@ final class RedirectApiUpdateTests: AppTestCase, RedirectTest {
                 XCTAssertEqual(content.destination, updateContent2.destination)
             }
             .test()
-        
+
         let (redirect3, updateContent3) = try await getRedirectUpdateContent(updatedSource: "hello, it is me here! & you \(UUID())")
         try app
             .describe("Update redirect as admin should return ok")
@@ -66,7 +59,7 @@ final class RedirectApiUpdateTests: AppTestCase, RedirectTest {
                 XCTAssertEqual(content.destination, updateContent3.destination)
             }
             .test()
-        
+
         let source4 = "some/source/\(UUID())"
         let destination4 = "some/destination/\(UUID())"
         let (redirect4, updateContent4) = try await getRedirectUpdateContent(source: source4, updatedSource: source4, destination: destination4, updatedDestination: destination4)
@@ -83,12 +76,12 @@ final class RedirectApiUpdateTests: AppTestCase, RedirectTest {
             }
             .test()
     }
-    
+
     func testSuccessfulUpdateRedirectWithDuplicateDestination() async throws {
         let token = try await getToken(for: .admin, verified: true)
         let redirect = try await createNewRedirect()
         let (newRedirect, updateContent) = try await getRedirectUpdateContent(updatedDestination: redirect.destination)
-        
+
         try app
             .describe("Update redirect with duplicate destination should return ok")
             .put(redirectPath.appending(newRedirect.requireID().uuidString))
@@ -102,11 +95,11 @@ final class RedirectApiUpdateTests: AppTestCase, RedirectTest {
             }
             .test()
     }
-    
+
     func testSuccessfulUpdateRedirectRemovesLeadingAndTrailingSlashes() async throws {
         let token = try await getToken(for: .admin, verified: true)
         let (redirect, updateContent) = try await getRedirectUpdateContent(updatedSource: "/Hello/this/is/\(UUID())/", updatedDestination: "/And/it/goes/to/\(UUID())/")
-        
+
         try app
             .describe("Update redirect with leading and/or trailing slashes should remove them")
             .put(redirectPath.appending(redirect.requireID().uuidString))
@@ -120,12 +113,12 @@ final class RedirectApiUpdateTests: AppTestCase, RedirectTest {
             }
             .test()
     }
-    
+
     func testUpdateRedirectWithDuplicateSourceFails() async throws {
         let token = try await getToken(for: .admin, verified: true)
         let redirect = try await createNewRedirect()
         let (newRedirect, updateContent) = try await getRedirectUpdateContent(updatedSource: redirect.source)
-        
+
         try app
             .describe("Update redirect with duplicate source should fail")
             .put(redirectPath.appending(newRedirect.requireID().uuidString))
@@ -134,12 +127,12 @@ final class RedirectApiUpdateTests: AppTestCase, RedirectTest {
             .expect(.badRequest)
             .test()
     }
-    
+
     func testUpdateRedirectWithSameSourceAndDestinationFails() async throws {
         let token = try await getToken(for: .admin, verified: true)
         let string = "this/is/a/test"
         let (redirect, updateContent) = try await getRedirectUpdateContent(updatedSource: string, updatedDestination: string)
-        
+
         try app
             .describe("Update redirect with same source and destination should fail")
             .put(redirectPath.appending(redirect.requireID().uuidString))
@@ -148,12 +141,12 @@ final class RedirectApiUpdateTests: AppTestCase, RedirectTest {
             .expect(.badRequest)
             .test()
     }
-    
+
     func testUpdateRedirectWithSourceAsOtherRedirectsDestinationFails() async throws {
         let token = try await getToken(for: .admin, verified: true)
         let redirect = try await createNewRedirect()
         let (newRedirect, updateContent) = try await getRedirectUpdateContent(updatedSource: redirect.destination)
-        
+
         try app
             .describe("Update redirect with source existing as other redirect's destination should fail")
             .put(redirectPath.appending(newRedirect.requireID().uuidString))
@@ -162,12 +155,12 @@ final class RedirectApiUpdateTests: AppTestCase, RedirectTest {
             .expect(.badRequest)
             .test()
     }
-    
+
     func testUpdateRedirectWithDestinationAsOtherRedirectsSourceFails() async throws {
         let token = try await getToken(for: .admin, verified: true)
         let redirect = try await createNewRedirect()
         let (newRedirect, updateContent) = try await getRedirectUpdateContent(updatedDestination: redirect.source)
-        
+
         try app
             .describe("Update redirect with destination existing as other redirect's source should fail")
             .put(redirectPath.appending(newRedirect.requireID().uuidString))
@@ -176,11 +169,11 @@ final class RedirectApiUpdateTests: AppTestCase, RedirectTest {
             .expect(.badRequest)
             .test()
     }
-    
+
     func testUpdateRedirectAsModeratorFails() async throws {
         let token = try await getToken(for: .moderator, verified: true)
         let (redirect, updateContent) = try await getRedirectUpdateContent()
-        
+
         try app
             .describe("Update redirect as moderator should should fail")
             .put(redirectPath.appending(redirect.requireID().uuidString))
@@ -189,10 +182,10 @@ final class RedirectApiUpdateTests: AppTestCase, RedirectTest {
             .expect(.forbidden)
             .test()
     }
-    
+
     func testUpdateRedirectWithoutTokenFails() async throws {
         let (redirect, updateContent) = try await getRedirectUpdateContent()
-        
+
         try app
             .describe("Update redirect without token should fail")
             .put(redirectPath.appending(redirect.requireID().uuidString))
@@ -200,10 +193,10 @@ final class RedirectApiUpdateTests: AppTestCase, RedirectTest {
             .expect(.unauthorized)
             .test()
     }
-    
+
     func testUpdateRedirectNeedsValidSource() async throws {
         let token = try await getToken(for: .admin, verified: true)
-        
+
         let (redirect1, updateContent1) = try await getRedirectUpdateContent(updatedSource: "")
         try app
             .describe("Update redirect with empty source should fail")
@@ -212,7 +205,7 @@ final class RedirectApiUpdateTests: AppTestCase, RedirectTest {
             .bearerToken(token)
             .expect(.badRequest)
             .test()
-        
+
         let (redirect2, updateContent2) = try await getRedirectUpdateContent(updatedSource: "?hello=\(UUID())")
         try app
             .describe("Update redirect with query instead of path should fail")
@@ -221,7 +214,7 @@ final class RedirectApiUpdateTests: AppTestCase, RedirectTest {
             .bearerToken(token)
             .expect(.badRequest)
             .test()
-        
+
         let (redirect3, updateContent3) = try await getRedirectUpdateContent(updatedSource: " \n\t ")
         try app
             .describe("Update redirect with whitespace should fail")
@@ -230,7 +223,7 @@ final class RedirectApiUpdateTests: AppTestCase, RedirectTest {
             .bearerToken(token)
             .expect(.badRequest)
             .test()
-        
+
         let (redirect4, updateContent4) = try await getRedirectUpdateContent(updatedSource: "/")
         try app
             .describe("Update redirect with empty source should fail")
@@ -240,10 +233,10 @@ final class RedirectApiUpdateTests: AppTestCase, RedirectTest {
             .expect(.badRequest)
             .test()
     }
-    
+
     func testUpdateRedirectNeedsValidDestination() async throws {
         let token = try await getToken(for: .admin, verified: true)
-        
+
         let (redirect1, updateContent1) = try await getRedirectUpdateContent(updatedDestination: "")
         try app
             .describe("Update redirect with empty source should fail")
@@ -252,7 +245,7 @@ final class RedirectApiUpdateTests: AppTestCase, RedirectTest {
             .bearerToken(token)
             .expect(.badRequest)
             .test()
-        
+
         let (redirect2, updateContent2) = try await getRedirectUpdateContent(updatedDestination: "?hello=\(UUID())")
         try app
             .describe("Update redirect with query instead of path should fail")
@@ -261,7 +254,7 @@ final class RedirectApiUpdateTests: AppTestCase, RedirectTest {
             .bearerToken(token)
             .expect(.badRequest)
             .test()
-        
+
         let (redirect3, updateContent3) = try await getRedirectUpdateContent(updatedDestination: " \n\t ")
         try app
             .describe("Update redirect with whitespace should fail")
@@ -270,7 +263,7 @@ final class RedirectApiUpdateTests: AppTestCase, RedirectTest {
             .bearerToken(token)
             .expect(.badRequest)
             .test()
-        
+
         let (redirect4, updateContent4) = try await getRedirectUpdateContent(updatedDestination: "/")
         try app
             .describe("Update redirect with empty source should fail")

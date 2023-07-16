@@ -1,13 +1,6 @@
-//
-//  StatusMigrations.swift
-//  
-//
-//  Created by niklhut on 05.06.22.
-//
-
-import Vapor
-import Fluent
 import AppApi
+import Fluent
+import Vapor
 
 enum StatusMigrations {
     struct v1: AsyncMigration {
@@ -18,7 +11,7 @@ enum StatusMigrations {
                 .case(Status.deleteRequested.rawValue)
                 .create()
         }
-        
+
         func revert(on db: Database) async throws {
             try await db.enum(Status.pathKey).delete()
         }

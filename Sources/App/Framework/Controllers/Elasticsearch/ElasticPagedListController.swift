@@ -1,13 +1,6 @@
-//
-//  ElasticPagedListController.swift
-//  
-//
-//  Created by niklhut on 07.10.22.
-//
-
-import Vapor
 import AppApi
 import ElasticsearchNIOClient
+import Vapor
 
 struct Empty: Codable { }
 
@@ -15,11 +8,11 @@ struct Empty: Codable { }
 protocol ElasticPagedListController: ElasticModelController {
     /// The list parameters
     associatedtype ListParameters: Codable = Empty
-    
+
     /// A json convertible array which extends the default search capabilities
     /// - Parameter sort: The default sort object which can be changed.
     func sortList(_ sort: inout [[String: Any]], on req: Request, with parameters: ListParameters) async throws
-    
+
     /// Queries elasticsearch to get a paged list of elastic models.
     /// - Parameter req: The request on which to perform the list.
     /// - Returns: A page of elastic models.
@@ -28,24 +21,24 @@ protocol ElasticPagedListController: ElasticModelController {
 
 extension ElasticPagedListController {
     func sortList(_ sort: inout [[String: Any]], on req: Request, with parameters: ListParameters) async throws { }
-    
+
     func list(_ req: Request) async throws -> Page<ElasticModel> {
         let pageRequest = try req.pageRequest
         let listParameters = try req.query.decode(ListParameters.self)
-        
-        var query: [String : Any] = [
+
+        var query: [String: Any] = [
             "from": (pageRequest.page - 1) * pageRequest.per,
             "size": pageRequest.per,
             "collapse": [
-                "field": "id"
+                "field": "id",
             ],
             "aggs": [
                 "count": [
                     "cardinality": [
-                        "field": "id"
-                    ]
-                ]
-            ]
+                        "field": "id",
+                    ],
+                ],
+            ],
         ]
         var sort: [[String: Any]] = []
         if let preferredLanguageCode = try? req.preferredLanguageCode() {
@@ -57,11 +50,11 @@ extension ElasticPagedListController {
                             "lang": "painless",
                             "source": "doc['languageCode'].value == params.preferredLanguageCode ? 0 : doc['languagePriority'].value",
                             "params": [
-                                "preferredLanguageCode": "\(preferredLanguageCode)"
-                            ]
+                                "preferredLanguageCode": "\(preferredLanguageCode)",
+                            ],
                         ],
-                        "order": "asc"
-                    ]
+                        "order": "asc",
+                    ],
                 ]
             )
         } else {
@@ -70,7 +63,7 @@ extension ElasticPagedListController {
         try await sortList(&sort, on: req, with: listParameters)
         sort.append(["title.keyword": "asc"])
         query["sort"] = sort
-        
+
         return try await req.elastic.perform {
             let queryData = try JSONSerialization.data(withJSONObject: query)
             let responseData = try await req.elastic.custom("/\(ElasticModel.wildcardSchema)/_search", method: .GET, body: queryData)

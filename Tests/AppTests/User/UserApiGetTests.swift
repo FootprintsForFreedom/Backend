@@ -1,14 +1,7 @@
-//
-//  UserApiGetTests.swift
-//  
-//
-//  Created by niklhut on 24.05.20.
-//
-
-@testable import App
-import XCTVapor
 import Fluent
 import Spec
+import XCTVapor
+@testable import App
 
 final class UserApiGetTests: AppTestCase, UserTest {
     private func createNewUser(
@@ -19,18 +12,18 @@ final class UserApiGetTests: AppTestCase, UserTest {
         verified: Bool = false,
         role: User.Role = .user
     ) async throws -> UserAccountModel {
-        let user = UserAccountModel(name: name, email: email, school: school, password: try app.password.hash(password), verified: verified, role: role)
+        let user = try UserAccountModel(name: name, email: email, school: school, password: app.password.hash(password), verified: verified, role: role)
         try await user.create(on: app.db)
         return user
     }
-    
+
     func testSuccessfulListUsers() async throws {
         let moderatorToken = try await getToken(for: .admin)
         let user = try await createNewUser()
-        
+
         // Get user count
         let userCount = try await UserAccountModel.query(on: app.db).count()
-        
+
         try app
             .describe("List users with admin token should return ok and all saved entries")
             .get(usersPath)
@@ -42,13 +35,13 @@ final class UserApiGetTests: AppTestCase, UserTest {
                 if userCount < content.items.count {
                     XCTAssert(content.items.contains { $0.id == user.id })
                 }
-        }
-        .test()
+            }
+            .test()
     }
-    
+
     func testListUsersAsModeratorFails() async throws {
         let token = try await getToken(for: .moderator)
-        
+
         try app
             .describe("List users should fail with normal token")
             .get(usersPath)
@@ -57,10 +50,10 @@ final class UserApiGetTests: AppTestCase, UserTest {
             .expect(.json)
             .test()
     }
-    
+
     func testListUsersWithNormalTokenFails() async throws {
         let token = try await getToken(for: .user)
-        
+
         try app
             .describe("List users should fail with normal token")
             .get(usersPath)
@@ -69,7 +62,7 @@ final class UserApiGetTests: AppTestCase, UserTest {
             .expect(.json)
             .test()
     }
-    
+
     func testListUsersWithoutTokenFails() throws {
         try app
             .describe("List users without token should fail")
@@ -77,12 +70,12 @@ final class UserApiGetTests: AppTestCase, UserTest {
             .expect(.unauthorized)
             .test()
     }
-    
+
     func testGetUserAsSelf() async throws {
         let user = try await createNewUser()
         let ownToken = try user.generateToken()
         try await ownToken.create(on: app.db)
-        
+
         try app
             .describe("Get user should return ok")
             .get(usersPath.appending(user.requireID().uuidString))
@@ -96,14 +89,14 @@ final class UserApiGetTests: AppTestCase, UserTest {
                 XCTAssertEqual(content.school, user.school)
                 XCTAssertEqual(content.verified, user.verified)
                 XCTAssertEqual(content.role, user.role)
-        }
-        .test()
+            }
+            .test()
     }
-    
+
     func testGetUserAsAdmin() async throws {
         let moderatorToken = try await getToken(for: .admin)
         let user = try await createNewUser()
-        
+
         try app
             .describe("Get user should return ok")
             .get(usersPath.appending(user.requireID().uuidString))
@@ -117,14 +110,14 @@ final class UserApiGetTests: AppTestCase, UserTest {
                 XCTAssertEqual(content.school, user.school)
                 XCTAssertEqual(content.verified, user.verified)
                 XCTAssertEqual(content.role, user.role)
-        }
-        .test()
+            }
+            .test()
     }
-    
+
     func testGetUserAsSuperAdmin() async throws {
         let user = try await createNewUser()
         let superAdminToken = try await getToken(for: .superAdmin)
-        
+
         try app
             .describe("Get user should return ok")
             .get(usersPath.appending(user.requireID().uuidString))
@@ -138,14 +131,14 @@ final class UserApiGetTests: AppTestCase, UserTest {
                 XCTAssertEqual(content.school, user.school)
                 XCTAssertEqual(content.verified, user.verified)
                 XCTAssertEqual(content.role, user.role)
-        }
-        .test()
+            }
+            .test()
     }
-    
+
     func testGetUserAsNormalUser() async throws {
         let token = try await getToken(for: .user)
         let user = try await createNewUser()
-        
+
         try app
             .describe("Get user should reutrn ok")
             .get(usersPath.appending(user.requireID().uuidString))
@@ -159,13 +152,13 @@ final class UserApiGetTests: AppTestCase, UserTest {
                 XCTAssertEqual(content.school, user.school)
                 XCTAssertNil(content.verified)
                 XCTAssertNil(content.role)
-        }
-        .test()
+            }
+            .test()
     }
-    
+
     func testGetUserWithoutToken() async throws {
         let user = try await createNewUser()
-        
+
         try app
             .describe("Get user should reutrn ok")
             .get(usersPath.appending(user.requireID().uuidString))
@@ -178,7 +171,7 @@ final class UserApiGetTests: AppTestCase, UserTest {
                 XCTAssertEqual(content.school, user.school)
                 XCTAssertNil(content.verified)
                 XCTAssertNil(content.role)
-        }
-        .test()
+            }
+            .test()
     }
 }

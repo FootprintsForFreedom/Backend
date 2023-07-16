@@ -1,22 +1,15 @@
-//
-//  WaypointApiSuggestTests.swift
-//  
-//
-//  Created by niklhut on 24.10.22.
-//
-
-@testable import App
-import XCTVapor
 import Fluent
 import Spec
+import XCTVapor
+@testable import App
 
 final class WaypointApiSuggestTests: AppTestCase, WaypointTest, TagTest {
     func testSuccessfulSuggestWaypointReturnsWhenTextPrefixOfTitle() async throws {
         let waypoint = try await createNewWaypoint(title: "Ein besonderer Titel \(UUID())", detailText: "Anderer Text", verified: true)
         try await waypoint.detail.$language.load(on: app.db)
-        
+
         try await Task.sleep(for: .seconds(1))
-        
+
         try app
             .describe("Suggest waypoint should return the waypoint if it is verified and has the suggest text in the title")
             .get(waypointsPath.appending("suggest/?text=ein&languageCode=\(waypoint.detail.language.languageCode)"))
@@ -32,11 +25,11 @@ final class WaypointApiSuggestTests: AppTestCase, WaypointTest, TagTest {
             }
             .test()
     }
-    
+
     func testSuccessfulSuggestWaypointOnlyReturnsVerifiedWaypoints() async throws {
         let waypoint = try await createNewWaypoint(title: "Ein besonderer Titel \(UUID())", detailText: "Anderer Text", verified: false)
         try await waypoint.detail.$language.load(on: app.db)
-        
+
         try app
             .describe("Suggest waypoint should not return the waypoint if it is unverified")
             .get(waypointsPath.appending("suggest/?text=ander&languageCode=\(waypoint.detail.language.languageCode)"))
@@ -47,11 +40,11 @@ final class WaypointApiSuggestTests: AppTestCase, WaypointTest, TagTest {
             }
             .test()
     }
-    
+
     func testSuccessfulSuggestWaypointDoesNotReturnWhenTextNotInTitle() async throws {
         let waypoint = try await createNewWaypoint(title: "Ein besonderer Titel \(UUID())", detailText: "Anderer Text", verified: true)
         try await waypoint.detail.$language.load(on: app.db)
-        
+
         try app
             .describe("Suggest waypoint should not return the waypoint if it is verified but does not have the suggest text in the title or detail text")
             .get(waypointsPath.appending("suggest/?text=anderer&languageCode=\(waypoint.detail.language.languageCode)"))
@@ -62,12 +55,12 @@ final class WaypointApiSuggestTests: AppTestCase, WaypointTest, TagTest {
             }
             .test()
     }
-    
+
     func testSuccessfulSuggestWaypointOnlyReturnsForSpecifiedLanguage() async throws {
         let language = try await createLanguage()
         let language2 = try await createLanguage()
         let waypoint = try await createNewWaypoint(title: "Ein besonderer Titel \(UUID())", detailText: "Anderer Text", verified: true, languageId: language.requireID())
-        
+
         try app
             .describe("Suggest waypoint should only return waypoints for the specified language")
             .get(waypointsPath.appending("suggest/?text=ander&languageCode=\(language2.languageCode)"))
@@ -78,11 +71,11 @@ final class WaypointApiSuggestTests: AppTestCase, WaypointTest, TagTest {
             }
             .test()
     }
-    
+
     func testSuccessfulSuggestWaypointDoesNotReturnDetailsForDeactivatedLanguage() async throws {
         let language = try await createLanguage()
         let waypoint = try await createNewWaypoint(title: "Ein besonderer Titel \(UUID())", detailText: "Anderer Text", verified: true, languageId: language.requireID())
-        
+
         let adminToken = try await getToken(for: .admin)
         try app
             .describe("Deactivate language as admin should return ok")
@@ -91,37 +84,37 @@ final class WaypointApiSuggestTests: AppTestCase, WaypointTest, TagTest {
             .expect(.ok)
             .expect(.json)
             .test()
-        
+
         try await waypoint.detail.$language.load(on: app.db)
-        
+
         try app
             .describe("Suggest waypoint should only return waypoints for the specified language")
             .get(waypointsPath.appending("suggest/?text=ander&languageCode=\(language.languageCode)"))
             .expect(.notFound)
             .test()
     }
-    
+
     func testSuggestWaypointNeedsValidText() async throws {
         let waypoint = try await createNewWaypoint(title: "Ein besonderer Titel \(UUID())", detailText: "Anderer Text", verified: true)
         try await waypoint.detail.$language.load(on: app.db)
-        
+
         try app
             .describe("Suggest waypoint should return the text query field is empty")
             .get(waypointsPath.appending("suggest/?text=&languageCode=\(waypoint.detail.language.languageCode)"))
             .expect(.badRequest)
             .test()
-        
+
         try app
             .describe("Suggest waypoint should return the text query field is only a whitespace or a newline")
             .get(waypointsPath.appending("suggest/?text=%20\n&languageCode=\(waypoint.detail.language.languageCode)"))
             .expect(.badRequest)
             .test()
     }
-    
+
     func testSuggestWaypointNeedsValidLanguageCode() async throws {
         let waypoint = try await createNewWaypoint(title: "Ein besonderer Titel \(UUID())", detailText: "Anderer Text", verified: true)
         try await waypoint.detail.$language.load(on: app.db)
-        
+
         try app
             .describe("Suggest waypoint should return the text query field is empty")
             .get(waypointsPath.appending("suggest/?text=bes"))

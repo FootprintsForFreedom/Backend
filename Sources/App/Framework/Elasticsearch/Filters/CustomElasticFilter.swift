@@ -1,10 +1,3 @@
-//
-//  CustomElasticFilter.swift
-//  
-//
-//  Created by niklhut on 07.10.22.
-//
-
 import Foundation
 
 /// Represents a custom elasticsearch filter.

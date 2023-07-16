@@ -1,24 +1,17 @@
-//
-//  WaypointTest.swift
-//  
-//
-//  Created by niklhut on 21.03.22.
-//
-
-@testable import App
-import XCTVapor
 import Fluent
 import Spec
+import XCTVapor
+@testable import App
 
 protocol WaypointTest: LanguageTest { }
 
 extension WaypointTest {
     var waypointsPath: String { "api/v1/waypoints/" }
-    
+
     func createNewWaypoint(
         title: String = "New Waypoint Title \(UUID())",
         detailText: String = "New Waypoint detail text",
-        location: Waypoint.Location = .init(latitude: Double.random(in: -90...90), longitude: Double.random(in: -180...180)),
+        location: Waypoint.Location = .init(latitude: Double.random(in: -90 ... 90), longitude: Double.random(in: -180 ... 180)),
         verified: Bool = false,
         languageId: UUID? = nil,
         userId: UUID? = nil
@@ -29,9 +22,9 @@ extension WaypointTest {
         }
         let waypointRepository = WaypointRepositoryModel()
         try await waypointRepository.create(on: app.db)
-        
+
         let languageId: UUID = try await {
-            if let languageId = languageId {
+            if let languageId {
                 return languageId
             } else {
                 return try await LanguageModel
@@ -41,7 +34,7 @@ extension WaypointTest {
                     .requireID()
             }
         }()
-        
+
         let waypointModel = try await WaypointDetailModel.createWith(
             title: title,
             detailText: detailText,
@@ -58,7 +51,7 @@ extension WaypointTest {
             verified: false,
             on: self
         )
-        
+
         if verified {
             try app
                 .describe("Verify waypoint detail as moderator should be successful and return ok")
@@ -70,7 +63,7 @@ extension WaypointTest {
                     waypointModel.slug = content.slug
                 }
                 .test()
-            
+
             try app
                 .describe("Verify waypoint location as moderator should be successful and return ok")
                 .post(waypointsPath.appending("\(waypointRepository.requireID())/locations/verify/\(location.requireID())"))
@@ -79,7 +72,7 @@ extension WaypointTest {
                 .expect(.json)
                 .test()
         }
-        
+
         return (waypointRepository, waypointModel, location)
     }
 }
@@ -106,7 +99,7 @@ extension WaypointDetailModel {
             userId: userId
         )
         try await waypoint.create(on: test.app.db)
-        
+
         if verified {
             try test.app
                 .describe("Verify waypoint detail as moderator should be successful and return ok")
@@ -119,10 +112,10 @@ extension WaypointDetailModel {
                 }
                 .test()
         }
-        
+
         return waypoint
     }
-    
+
     @discardableResult
     func updateWith(
         title: String = "Updated Waypoint Title \(UUID())",
@@ -134,14 +127,14 @@ extension WaypointDetailModel {
         on db: Database
     ) async throws -> Self {
         let slug = slug ?? title.appending(" ").appending(Date().toString(with: .day)).slugify()
-        let waypoint = Self.init(
+        let waypoint = Self(
             verifiedAt: verifiedAt,
             title: title,
             slug: slug,
             detailText: detailText,
-            languageId: languageId ?? self.$language.id,
-            repositoryId: self.$repository.id,
-            userId: userId ?? self.$user.id!
+            languageId: languageId ?? $language.id,
+            repositoryId: $repository.id,
+            userId: userId ?? $user.id!
         )
         try await waypoint.create(on: db)
         return waypoint
@@ -164,7 +157,7 @@ extension WaypointLocationModel {
             userId: userId
         )
         try await location.create(on: test.app.db)
-        
+
         if verified {
             try test.app
                 .describe("Verify waypoint location as moderator should be successful and return ok")
@@ -174,23 +167,23 @@ extension WaypointLocationModel {
                 .expect(.json)
                 .test()
         }
-        
+
         return location
     }
-    
+
     @discardableResult
     func updateWith(
-        location: Waypoint.Location = .init(latitude: Double.random(in: -90...90), longitude: Double.random(in: -180...180)),
+        location: Waypoint.Location = .init(latitude: Double.random(in: -90 ... 90), longitude: Double.random(in: -180 ... 180)),
         userId: UUID? = nil,
         verifiedAt: Date? = nil,
         on db: Database
     ) async throws -> Self {
-        let location = Self.init(
+        let location = Self(
             verifiedAt: verifiedAt,
             latitude: location.latitude,
             longitude: location.longitude,
-            repositoryId: self.$repository.id,
-            userId: userId ?? self.$user.id!
+            repositoryId: $repository.id,
+            userId: userId ?? $user.id!
         )
         try await location.create(on: db)
         return location

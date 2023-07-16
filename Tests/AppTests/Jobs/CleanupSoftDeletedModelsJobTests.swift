@@ -1,15 +1,8 @@
-//
-//  CleanupSoftDeletedModelsJobTests.swift
-//  
-//
-//  Created by niklhut on 13.06.22.
-//
-
-@testable import App
-import XCTVapor
 import Fluent
 import Queues
 import Spec
+import XCTVapor
+@testable import App
 
 extension Model {
     static func findWithDeleted(
@@ -31,7 +24,7 @@ final class CleanupSoftDeletedModelsJobTests: AppTestCase, TagTest, WaypointTest
         let createdWaypointReport = try await createNewWaypointReport(waypoint: waypoint)
         let staticContent = try await createNewStaticContent()
         let redirect = try await createNewRedirect()
-        
+
         try await tag.repository.set(\.deletedAt, furtherBackThan: Environment.softDeletedLifetime, on: app.db)
         try await tag.detail.set(\.deletedAt, furtherBackThan: Environment.softDeletedLifetime, on: app.db)
         try await createdTagReport.set(\.deletedAt, furtherBackThan: Environment.softDeletedLifetime, on: app.db)
@@ -46,17 +39,17 @@ final class CleanupSoftDeletedModelsJobTests: AppTestCase, TagTest, WaypointTest
         try await staticContent.repository.set(\.deletedAt, furtherBackThan: Environment.softDeletedLifetime, on: app.db)
         try await staticContent.detail.set(\.deletedAt, furtherBackThan: Environment.softDeletedLifetime, on: app.db)
         try await redirect.set(\.deletedAt, furtherBackThan: Environment.softDeletedLifetime, on: app.db)
-        
+
         let context = QueueContext(
-                    queueName: .init(string: "test"),
-                    configuration: .init(),
-                    application: app,
-                    logger: app.logger,
-                    on: app.eventLoopGroup.next()
-                )
-        
+            queueName: .init(string: "test"),
+            configuration: .init(),
+            application: app,
+            logger: app.logger,
+            on: app.eventLoopGroup.next()
+        )
+
         try await CleanupSoftDeletedModelsJob().run(context: context)
-        
+
         let tagRepository = try await TagRepositoryModel.findWithDeleted(tag.repository.requireID(), on: app.db)
         XCTAssertNil(tagRepository)
         let tagDetail = try await TagDetailModel.findWithDeleted(tag.detail.requireID(), on: app.db)
@@ -86,7 +79,7 @@ final class CleanupSoftDeletedModelsJobTests: AppTestCase, TagTest, WaypointTest
         let redirectResponse = try await RedirectModel.findWithDeleted(redirect.requireID(), on: app.db)
         XCTAssertNil(redirectResponse)
     }
-    
+
     func testSuccessfulCleanupSoftDeletedModelsJobDoesNotDeleteNewerModelsThanSpecifiedInEnvironment() async throws {
         let tag = try await createNewTag()
         let createdTagReport = try await createNewTagReport(tag: tag)
@@ -96,17 +89,17 @@ final class CleanupSoftDeletedModelsJobTests: AppTestCase, TagTest, WaypointTest
         let createdWaypointReport = try await createNewWaypointReport(waypoint: waypoint)
         let staticContent = try await createNewStaticContent()
         let redirect = try await createNewRedirect()
-        
+
         let context = QueueContext(
-                    queueName: .init(string: "test"),
-                    configuration: .init(),
-                    application: app,
-                    logger: app.logger,
-                    on: app.eventLoopGroup.next()
-                )
-        
+            queueName: .init(string: "test"),
+            configuration: .init(),
+            application: app,
+            logger: app.logger,
+            on: app.eventLoopGroup.next()
+        )
+
         try await CleanupSoftDeletedModelsJob().run(context: context)
-        
+
         let tagRepository = try await TagRepositoryModel.findWithDeleted(tag.repository.requireID(), on: app.db)
         XCTAssertNotNil(tagRepository)
         let tagDetail = try await TagDetailModel.findWithDeleted(tag.detail.requireID(), on: app.db)

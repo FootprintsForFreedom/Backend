@@ -1,12 +1,5 @@
-//
-//  InitializableById.swift
-//  
-//
-//  Created by niklhut on 08.06.22.
-//
-
-import Foundation
 import Fluent
+import Foundation
 
 /// Represents an object that can be initialized with just the id.
 protocol InitializableById: Codable {

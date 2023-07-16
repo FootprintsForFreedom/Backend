@@ -1,19 +1,12 @@
-//
-//  UserTokenAuthenticator.swift
-//  
-//
-//  Created by niklhut on 01.02.22.
-//
-
-import Vapor
 import Fluent
+import Vapor
 
 struct UserTokenAuthenticator: AsyncBearerAuthenticator {
     func authenticate(bearer: BearerAuthorization, for req: Request) async throws {
         guard let token = try await UserTokenModel.query(on: req.db).filter(\.$value == bearer.token).first() else {
             return
         }
-        
+
         guard let user = try await UserAccountModel.find(token.$user.id, on: req.db) else {
             return
         }

@@ -1,10 +1,3 @@
-//
-//  Page+Map.swift
-//  
-//
-//  Created by niklhut on 20.02.22.
-//
-
 import AppApi
 import FluentKit
 
@@ -24,10 +17,11 @@ extension FluentKit.Page {
     /// - throws: Rethrows any error thrown by the passed closure.
     func concurrentMap<U>(_ transform: @escaping (T) async throws -> (U)) async throws -> FluentKit.Page<U> {
         try await .init(
-            items: self.items.concurrentMap(transform),
-            metadata: self.metadata)
+            items: items.concurrentMap(transform),
+            metadata: metadata
+        )
     }
-    
+
     /// Returns an array containing the non-`nil` results of calling the given
     /// transformation with each element of this sequence.
     ///
@@ -42,12 +36,12 @@ extension FluentKit.Page {
     /// - Complexity: O(*m* + *n*), where *n* is the length of this sequence
     ///   and *m* is the length of the result.
     func compactMap<U>(_ transform: (T) throws -> U?) rethrows -> FluentKit.Page<U> {
-        .init(
-            items: try self.items.compactMap(transform),
-            metadata: self.metadata
+        try .init(
+            items: items.compactMap(transform),
+            metadata: metadata
         )
     }
-    
+
     /// Transform the sequence into a page of new values using
     /// an async closure that returns optional values. Only the
     /// non-`nil` return values will be included in the new array.
@@ -65,8 +59,9 @@ extension FluentKit.Page {
     /// - throws: Rethrows any error thrown by the passed closure.
     func concurrentCompactMap<U>(_ transform: @escaping (T) async throws -> U?) async throws -> FluentKit.Page<U> {
         try await .init(
-            items: self.items.concurrentCompactMap(transform),
-            metadata: self.metadata)
+            items: items.concurrentCompactMap(transform),
+            metadata: metadata
+        )
     }
 }
 
@@ -86,10 +81,11 @@ extension AppApi.Page {
     /// - throws: Rethrows any error thrown by the passed closure.
     func concurrentMap<U>(_ transform: @escaping (T) async throws -> (U)) async throws -> AppApi.Page<U> {
         try await .init(
-            items: self.items.concurrentMap(transform),
-            metadata: self.metadata)
+            items: items.concurrentMap(transform),
+            metadata: metadata
+        )
     }
-    
+
     /// Returns an array containing the non-`nil` results of calling the given
     /// transformation with each element of this sequence.
     ///
@@ -104,12 +100,12 @@ extension AppApi.Page {
     /// - Complexity: O(*m* + *n*), where *n* is the length of this sequence
     ///   and *m* is the length of the result.
     func compactMap<U>(_ transform: (T) throws -> U?) rethrows -> AppApi.Page<U> {
-        .init(
-            items: try self.items.compactMap(transform),
-            metadata: self.metadata
+        try .init(
+            items: items.compactMap(transform),
+            metadata: metadata
         )
     }
-    
+
     /// Transform the sequence into a page of new values using
     /// an async closure that returns optional values. Only the
     /// non-`nil` return values will be included in the new array.
@@ -127,7 +123,8 @@ extension AppApi.Page {
     /// - throws: Rethrows any error thrown by the passed closure.
     func concurrentCompactMap<U>(_ transform: @escaping (T) async throws -> U?) async throws -> AppApi.Page<U> {
         try await .init(
-            items: self.items.concurrentCompactMap(transform),
-            metadata: self.metadata)
+            items: items.concurrentCompactMap(transform),
+            metadata: metadata
+        )
     }
 }

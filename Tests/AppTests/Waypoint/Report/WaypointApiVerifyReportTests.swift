@@ -1,14 +1,7 @@
-//
-//  WaypointApiVerifyReportTests.swift
-//  
-//
-//  Created by niklhut on 08.06.22.
-//
-
-@testable import App
-import XCTVapor
 import Fluent
 import Spec
+import XCTVapor
+@testable import App
 
 final class WaypointApiVerifyReportTests: AppTestCase, WaypointTest {
     func testSuccessfulVerifyReport() async throws {
@@ -16,7 +9,7 @@ final class WaypointApiVerifyReportTests: AppTestCase, WaypointTest {
         let waypoint = try await createNewWaypoint()
         let report = try await createNewWaypointReport(waypoint: waypoint)
         try await waypoint.detail.$language.load(on: app.db)
-        
+
         try app
             .describe("Verify report as moderator should be successful and return ok")
             .post(waypointsPath.appending("\(waypoint.repository.requireID())/reports/verify/\(report.requireID())"))
@@ -41,13 +34,13 @@ final class WaypointApiVerifyReportTests: AppTestCase, WaypointTest {
             }
             .test()
     }
-    
+
     func testSuccessfulVerifyReportWithDeletedVisbleDetail() async throws {
         let moderatorToken = try await getToken(for: .moderator)
         let waypoint = try await createNewWaypoint()
         let report = try await createNewWaypointReport(waypoint: waypoint)
         try await waypoint.detail.delete(force: true, on: app.db)
-        
+
         try app
             .describe("Verify report as moderator should be successful and return ok")
             .post(waypointsPath.appending("\(waypoint.repository.requireID())/reports/verify/\(report.requireID())"))
@@ -62,13 +55,13 @@ final class WaypointApiVerifyReportTests: AppTestCase, WaypointTest {
             }
             .test()
     }
-    
+
     func testVerifyReportAsUserFails() async throws {
         let token = try await getToken(for: .user)
         let waypoint = try await createNewWaypoint()
         let report = try await createNewWaypointReport(waypoint: waypoint)
         try await waypoint.detail.$language.load(on: app.db)
-        
+
         try app
             .describe("Verify report as user should fail")
             .post(waypointsPath.appending("\(waypoint.repository.requireID())/reports/verify/\(report.requireID())"))
@@ -76,25 +69,25 @@ final class WaypointApiVerifyReportTests: AppTestCase, WaypointTest {
             .expect(.forbidden)
             .test()
     }
-    
+
     func testVerifyReportWithoutTokenFails() async throws {
         let waypoint = try await createNewWaypoint()
         let report = try await createNewWaypointReport(waypoint: waypoint)
         try await waypoint.detail.$language.load(on: app.db)
-        
+
         try app
             .describe("Verify report without token should fail")
             .post(waypointsPath.appending("\(waypoint.repository.requireID())/reports/verify/\(report.requireID())"))
             .expect(.unauthorized)
             .test()
     }
-    
+
     func testVerifyReportWithAlreadyVerifiedReportFails() async throws {
         let moderatorToken = try await getToken(for: .moderator)
         let waypoint = try await createNewWaypoint()
         let report = try await createNewWaypointReport(waypoint: waypoint, verifiedAt: Date())
         try await waypoint.detail.$language.load(on: app.db)
-        
+
         try app
             .describe("Verify report as moderator should be successful and return ok")
             .post(waypointsPath.appending("\(waypoint.repository.requireID())/reports/verify/\(report.requireID())"))

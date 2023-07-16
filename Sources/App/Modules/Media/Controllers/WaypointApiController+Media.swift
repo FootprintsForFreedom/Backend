@@ -1,19 +1,12 @@
-//
-//  WaypointApiController+Media.swift
-//  
-//
-//  Created by niklhut on 17.05.22.
-//
-
-import Vapor
 import AppApi
 import ElasticsearchNIOClient
+import Vapor
 
 extension WaypointApiController {
     func listMedia(_ req: Request) async throws -> AppApi.Page<Media.Detail.List> {
         let pageRequest = try req.pageRequest
         let waypointRepository = try await repository(req)
-        
+
         var sort: [[String: Any]] = []
         if let preferredLanguageCode = try? req.preferredLanguageCode() {
             sort.append(
@@ -24,41 +17,41 @@ extension WaypointApiController {
                             "lang": "painless",
                             "source": "doc['languageCode'].value == params.preferredLanguageCode ? 0 : doc['languagePriority'].value",
                             "params": [
-                                "preferredLanguageCode": "\(preferredLanguageCode)"
-                            ]
+                                "preferredLanguageCode": "\(preferredLanguageCode)",
+                            ],
                         ],
-                        "order": "asc"
-                    ]
+                        "order": "asc",
+                    ],
                 ]
             )
         } else {
             sort.append(["languagePriority": "asc"])
         }
         sort.append(["title.keyword": "asc"])
-        
+
         let mediaQuery: [String: Any] = try [
             "from": (pageRequest.page - 1) * pageRequest.per,
             "size": pageRequest.per,
             "collapse": [
-                "field": "id"
+                "field": "id",
             ],
             "query": [
                 "term": [
                     "waypointId": [
-                        "value": waypointRepository.requireID().uuidString
-                    ]
-                ]
+                        "value": waypointRepository.requireID().uuidString,
+                    ],
+                ],
             ],
             "aggs": [
                 "count": [
                     "cardinality": [
-                        "field": "id"
-                    ]
-                ]
+                        "field": "id",
+                    ],
+                ],
             ],
-            "sort": sort
+            "sort": sort,
         ]
-        
+
         return try await req.elastic.perform {
             let queryData = try JSONSerialization.data(withJSONObject: mediaQuery)
             let responseData = try await req.elastic.custom("/\(MediaSummaryModel.Elasticsearch.wildcardSchema)/_search", method: .GET, body: queryData)
@@ -77,7 +70,7 @@ extension WaypointApiController {
             )
         }
     }
-    
+
     func setupMediaRoute(_ routes: RoutesBuilder) {
         let baseRoutes = getBaseRoutes(routes)
         let existingModelRoutes = baseRoutes.grouped(ApiModel.pathIdComponent)

@@ -1,10 +1,3 @@
-//
-//  ElasticStemmer.swift
-//  
-//
-//  Created by niklhut on 07.10.22.
-//
-
 import Foundation
 
 /// Provides [algorithmic stemming](https://www.elastic.co/guide/en/elasticsearch/reference/current/stemming.html#algorithmic-stemmers) for several languages, some with additional variants.
@@ -66,19 +59,19 @@ enum ElasticStemmer: String, CustomElasticFilter {
     case lightSwedish = "light_swedish"
     case swedish
     case turkish
-    
+
     var name: String {
-        "\(self.rawValue)_\(Self.default)"
+        "\(rawValue)_\(Self.default)"
     }
-    
+
     static var `default` = "stemmer"
-    
+
     var json: [String: Any] {
         [
             name: [
                 "type": Self.default,
-                "language": self.rawValue
-            ]
+                "language": rawValue,
+            ],
         ]
     }
 }

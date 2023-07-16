@@ -1,12 +1,5 @@
-//
-//  MailDefaults.swift
-//  
-//
-//  Created by niklhut on 01.02.22.
-//
-
-import Vapor
 import SwiftSMTP
+import Vapor
 
 struct MailDefaults {
     static var sender: Email.Contact {

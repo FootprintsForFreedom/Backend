@@ -1,18 +1,11 @@
-//
-//  MediaDetailModel.swift
-//  
-//
-//  Created by niklhut on 16.02.22.
-//
-
-import Vapor
 import Fluent
+import Vapor
 
 final class MediaDetailModel: TitledDetailModel {
     typealias Module = MediaModule
-    
-    struct FieldKeys {
-        struct v1 {
+
+    enum FieldKeys {
+        enum v1 {
             static var title: FieldKey { "title" }
             static var slug: FieldKey { "slug" }
             static var detailText: FieldKey { "detail_text" }
@@ -27,30 +20,31 @@ final class MediaDetailModel: TitledDetailModel {
             static var deletedAt: FieldKey { "deleted_at" }
         }
     }
-    
+
     @ID() var id: UUID?
 
     @Field(key: FieldKeys.v1.title) var title: String
     @Field(key: FieldKeys.v1.slug) var slug: String
     @Field(key: FieldKeys.v1.detailText) var detailText: String
     @Field(key: FieldKeys.v1.source) var source: String
-    
+
     @Parent(key: FieldKeys.v1.languageId) var language: LanguageModel
-    
+
     @Parent(key: FieldKeys.v1.repositoryId) var repository: MediaRepositoryModel
     @Parent(key: FieldKeys.v1.mediaId) var media: MediaFileModel
     @OptionalParent(key: FieldKeys.v1.userId) var user: UserAccountModel?
-    
+
     @OptionalField(key: FieldKeys.v1.verifiedAt) var verifiedAt: Date?
-    
+
     @Timestamp(key: FieldKeys.v1.createdAt, on: .create) var createdAt: Date?
     @Timestamp(key: FieldKeys.v1.updatedAt, on: .update) var updatedAt: Date?
-    
+
     // MARK: soft delete
+
     @Timestamp(key: FieldKeys.v1.deletedAt, on: .delete) var deletedAt: Date?
-    
+
     init() { }
-    
+
     init(
         verifiedAt: Date? = nil,
         title: String,
@@ -67,10 +61,10 @@ final class MediaDetailModel: TitledDetailModel {
         self.slug = slug
         self.detailText = detailText
         self.source = source
-        self.$language.id = languageId
-        self.$repository.id = repositoryId
-        self.$media.id = fileId
-        self.$user.id = userId
+        $language.id = languageId
+        $repository.id = repositoryId
+        $media.id = fileId
+        $user.id = userId
     }
 }
 

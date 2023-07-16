@@ -1,10 +1,3 @@
-//
-//  ReportDetail.swift
-//  
-//
-//  Created by niklhut on 08.06.22.
-//
-
 import Foundation
 
 public extension Report {
@@ -16,7 +9,7 @@ public extension Report {
         public let title: String
         /// The slug uniquely identifying the report.
         public let slug: String
-        
+
         /// Creates a report list object.
         /// - Parameters:
         ///   - id: Id uniquely identifying the report.
@@ -28,7 +21,7 @@ public extension Report {
             self.slug = slug
         }
     }
-    
+
     /// Used to detail report objects.
     struct Detail<DetailModel: Codable>: Codable {
         /// Id uniquely identifying the repository to which the report belongs..
@@ -43,7 +36,7 @@ public extension Report {
         public let visibleDetail: DetailModel?
         /// Id uniquely identifying the report.
         public let reportId: UUID
-        
+
         /// Creates a report detail object.
         /// - Parameters:
         ///   - id: Id uniquely identifying the repository to which the report belongs..
@@ -61,7 +54,7 @@ public extension Report {
             self.reportId = reportId
         }
     }
-    
+
     /// Used to create report objects.
     struct Create: Codable {
         /// The report title.
@@ -70,7 +63,7 @@ public extension Report {
         public let reason: String
         /// The currently visible detail id. This is so it is known to which language this report belongs and wether the detail object has since been updated.
         public let visibleDetailId: UUID
-        
+
         /// Creates a report create object.
         /// - Parameters:
         ///   - title: The report title.

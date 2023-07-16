@@ -1,13 +1,6 @@
-//
-//  WaypointTest+Report.swift
-//  
-//
-//  Created by niklhut on 13.06.22.
-//
-
-@testable import App
-import XCTVapor
 import Fluent
+import XCTVapor
+@testable import App
 
 extension WaypointTest {
     func createNewWaypointReport(
@@ -21,7 +14,7 @@ extension WaypointTest {
         if userId == nil {
             userId = try await getUser(role: .user).requireID()
         }
-        
+
         let report = try WaypointReportModel(
             verifiedAt: verifiedAt,
             title: title,
@@ -32,7 +25,7 @@ extension WaypointTest {
             userId: userId
         )
         try await report.create(on: app.db)
-        
+
         return report
     }
 }

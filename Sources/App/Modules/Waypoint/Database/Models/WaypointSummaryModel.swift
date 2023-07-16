@@ -1,22 +1,15 @@
-//
-//  WaypointSummaryModel.swift
-//  
-//
-//  Created by niklhut on 13.09.22.
-//
-
-import Vapor
-import Fluent
 import AppApi
 import ElasticsearchNIOClient
+import Fluent
+import Vapor
 
 final class WaypointSummaryModel: DatabaseElasticInterface {
     typealias Module = WaypointModule
-    
+
     static var schema: String = "waypoint_summaries"
-    
-    struct FieldKeys {
-        struct v1 {
+
+    enum FieldKeys {
+        enum v1 {
             static var title: FieldKey { "title" }
             static var slug: FieldKey { "slug" }
             static var detailText: FieldKey { "detail_text" }
@@ -41,9 +34,9 @@ final class WaypointSummaryModel: DatabaseElasticInterface {
             static var languageId: FieldKey { "language_id" }
         }
     }
-    
+
     @ID() var id: UUID?
-    
+
     @Field(key: FieldKeys.v1.detailId) var detailId: UUID
     @Field(key: FieldKeys.v1.title) var title: String
     @Field(key: FieldKeys.v1.slug) var slug: String
@@ -53,7 +46,7 @@ final class WaypointSummaryModel: DatabaseElasticInterface {
     @OptionalField(key: FieldKeys.v1.detailCreatedAt) var detailCreatedAt: Date?
     @OptionalField(key: FieldKeys.v1.detailUpdatedAt) var detailUpdatedAt: Date?
     @OptionalField(key: FieldKeys.v1.detailDeletedAt) var detailDeletedAt: Date?
-    
+
     @Field(key: FieldKeys.v1.locationId) var locationId: UUID
     @Field(key: FieldKeys.v1.latitude) var latitude: Double
     @Field(key: FieldKeys.v1.longitude) var longitude: Double
@@ -62,13 +55,13 @@ final class WaypointSummaryModel: DatabaseElasticInterface {
     @OptionalField(key: FieldKeys.v1.locationCreatedAt) var locationCreatedAt: Date?
     @OptionalField(key: FieldKeys.v1.locationUpdatedAt) var locationUpdatedAt: Date?
     @OptionalField(key: FieldKeys.v1.locationDeletedAt) var locationDeletedAt: Date?
-    
+
     @Field(key: FieldKeys.v1.languageId) var languageId: UUID
     @Field(key: FieldKeys.v1.languageName) var languageName: String
     @Field(key: FieldKeys.v1.languageCode) var languageCode: String
     @Field(key: FieldKeys.v1.languageIsRTL) var languageIsRTL: Bool
     @OptionalField(key: FieldKeys.v1.languagePriority) var languagePriority: Int?
-    
+
     init() { }
 }
 
@@ -81,103 +74,103 @@ extension WaypointSummaryModel {
 extension WaypointSummaryModel {
     struct Elasticsearch: ElasticModelInterface {
         typealias DatabaseModel = WaypointSummaryModel
-        
+
         static var baseSchema = "waypoints"
-        static var mappings: [String : Any] = [
+        static var mappings: [String: Any] = [
             "properties": [
                 "id": [
-                    "type": "keyword"
+                    "type": "keyword",
                 ],
                 "detailId": [
-                    "type": "keyword"
+                    "type": "keyword",
                 ],
                 "title": [
                     "type": "text",
                     "fields": [
                         "keyword": [
-                            "type": "keyword"
+                            "type": "keyword",
                         ],
                         "suggest": [
                             "type": "completion",
-                            "analyzer": "default"
-                        ]
-                    ]
+                            "analyzer": "default",
+                        ],
+                    ],
                 ],
                 "slug": [
-                    "type": "keyword"
+                    "type": "keyword",
                 ],
                 "detailText": [
                     "type": "text",
                 ],
                 "detailVerifiedAt": [
-                    "type": "date"
+                    "type": "date",
                 ],
                 "detailCreatedAt": [
-                    "type": "date"
+                    "type": "date",
                 ],
                 "detailUpdatedAt": [
-                    "type": "date"
+                    "type": "date",
                 ],
                 "detailDeletedAt": [
-                    "type": "date"
+                    "type": "date",
                 ],
                 "locationId": [
-                    "type": "keyword"
+                    "type": "keyword",
                 ],
                 "location": [
-                    "type": "geo_point"
+                    "type": "geo_point",
                 ],
                 "locationUserId": [
-                    "type": "keyword"
+                    "type": "keyword",
                 ],
                 "locationVerifiedAt": [
-                    "type": "date"
+                    "type": "date",
                 ],
                 "locationCreatedAt": [
-                    "type": "date"
+                    "type": "date",
                 ],
                 "locationUpdatedAt": [
-                    "type": "date"
+                    "type": "date",
                 ],
                 "locationDeletedAt": [
-                    "type": "date"
+                    "type": "date",
                 ],
                 "detailUserId": [
-                    "type": "keyword"
+                    "type": "keyword",
                 ],
                 "languageId": [
-                    "type": "keyword"
+                    "type": "keyword",
                 ],
                 "languageName": [
                     "type": "text",
                     "fields": [
                         "keyword": [
-                            "type": "keyword"
-                        ]
-                    ]
+                            "type": "keyword",
+                        ],
+                    ],
                 ],
                 "languageCode": [
-                    "type": "keyword"
+                    "type": "keyword",
                 ],
                 "languageIsRTL": [
-                    "type": "boolean"
+                    "type": "boolean",
                 ],
                 "languagePriority": [
-                    "type": "short"
+                    "type": "short",
                 ],
                 "tags": [
-                    "type": "keyword"
-                ]
-            ]
+                    "type": "keyword",
+                ],
+            ],
         ]
-        
+
         struct Location: Codable {
             var lat: Double
             var lon: Double
         }
-        
+
         var id: UUID
-        
+
         var detailId: UUID
         var title: String
         var slug: String
@@ -187,7 +180,7 @@ extension WaypointSummaryModel {
         var detailCreatedAt: Date?
         var detailUpdatedAt: Date?
         var detailDeletedAt: Date?
-        
+
         var locationId: UUID
         var location: Location
         @NullCodable var locationUserId: UUID?
@@ -195,50 +188,50 @@ extension WaypointSummaryModel {
         var locationCreatedAt: Date?
         var locationUpdatedAt: Date?
         var locationDeletedAt: Date?
-        
+
         var languageId: UUID
         var languageName: String
         var languageCode: String
         var languageIsRTL: Bool
         var languagePriority: Int?
-        
+
         var tags: [UUID]
     }
-    
+
     func toElasticsearch(on db: Database) async throws -> Elasticsearch {
         let tags = try await WaypointTagModel
             .query(on: db)
-            .filter(\.$waypoint.$id == self.requireID())
+            .filter(\.$waypoint.$id == requireID())
             .field(\.$tag.$id)
             .all()
-            .map { $0.$tag.id }
-        return try self.toElasticsearch(tags: tags)
+            .map(\.$tag.id)
+        return try toElasticsearch(tags: tags)
     }
-    
+
     func toElasticsearch(tags: [UUID]) throws -> Elasticsearch {
         try Elasticsearch(
-            id: self.requireID(),
-            detailId: self.detailId,
-            title: self.title,
-            slug: self.slug,
-            detailText: self.detailText,
-            detailUserId: self.detailUserId,
-            detailVerifiedAt: self.detailVerifiedAt,
-            detailCreatedAt: self.detailCreatedAt,
-            detailUpdatedAt: self.detailUpdatedAt,
-            detailDeletedAt: self.detailDeletedAt,
-            locationId: self.locationId,
-            location: Elasticsearch.Location(lat: self.latitude, lon: self.longitude),
-            locationUserId: self.locationUserId,
-            locationVerifiedAt: self.locationVerifiedAt,
-            locationCreatedAt: self.locationCreatedAt,
-            locationUpdatedAt: self.locationUpdatedAt,
-            locationDeletedAt: self.locationDeletedAt,
-            languageId: self.languageId,
-            languageName: self.languageName,
-            languageCode: self.languageCode,
-            languageIsRTL: self.languageIsRTL,
-            languagePriority: self.languagePriority,
+            id: requireID(),
+            detailId: detailId,
+            title: title,
+            slug: slug,
+            detailText: detailText,
+            detailUserId: detailUserId,
+            detailVerifiedAt: detailVerifiedAt,
+            detailCreatedAt: detailCreatedAt,
+            detailUpdatedAt: detailUpdatedAt,
+            detailDeletedAt: detailDeletedAt,
+            locationId: locationId,
+            location: Elasticsearch.Location(lat: latitude, lon: longitude),
+            locationUserId: locationUserId,
+            locationVerifiedAt: locationVerifiedAt,
+            locationCreatedAt: locationCreatedAt,
+            locationUpdatedAt: locationUpdatedAt,
+            locationDeletedAt: locationDeletedAt,
+            languageId: languageId,
+            languageName: languageName,
+            languageCode: languageCode,
+            languageIsRTL: languageIsRTL,
+            languagePriority: languagePriority,
             tags: tags
         )
     }
@@ -258,7 +251,7 @@ extension WaypointSummaryModel.Elasticsearch {
         let response = try await req.elastic.bulk(documents)
         return response
     }
-    
+
     @discardableResult
     static func deleteUser(_ userId: UUID, on req: Request) async throws -> ESBulkResponse? {
         let elementsToDelete = try await DatabaseModel
@@ -269,7 +262,7 @@ extension WaypointSummaryModel.Elasticsearch {
                     .filter(\.$locationUserId == userId)
             }
             .all()
-        
+
         guard !elementsToDelete.isEmpty else { return nil }
         let documents = try await elementsToDelete
             .concurrentMap { element in
@@ -283,29 +276,29 @@ extension WaypointSummaryModel.Elasticsearch {
                 return document
             }
             .map { (document: Self) in
-                return ESBulkOperation(operationType: .update, index: document.schema, id: document.id, document: document)
+                ESBulkOperation(operationType: .update, index: document.schema, id: document.id, document: document)
             }
         let response = try await req.elastic.bulk(documents)
         return response
     }
-    
+
     func getTagList(preferredLanguageCode: String?, on elastic: ElasticHandler) async throws -> [Tag.Detail.List] {
-        guard !self.tags.isEmpty else {
+        guard !tags.isEmpty else {
             return []
         }
-        
+
         var query: [String: Any] = [
             "query": [
                 "terms": [
-                    "id": self.tags.map(\.uuidString)
-                ]
+                    "id": tags.map(\.uuidString),
+                ],
             ],
             "collapse": [
-                "field": "id"
+                "field": "id",
             ],
         ]
         var sort: [[String: Any]] = []
-        if let preferredLanguageCode = preferredLanguageCode {
+        if let preferredLanguageCode {
             sort.append(
                 [
                     "_script": [
@@ -314,19 +307,19 @@ extension WaypointSummaryModel.Elasticsearch {
                             "lang": "painless",
                             "source": "doc['languageCode'].value == params.preferredLanguageCode ? 0 : doc['languagePriority'].value",
                             "params": [
-                                "preferredLanguageCode": "\(preferredLanguageCode)"
-                            ]
+                                "preferredLanguageCode": "\(preferredLanguageCode)",
+                            ],
                         ],
-                        "order": "asc"
-                    ]
+                        "order": "asc",
+                    ],
                 ]
             )
         } else {
             sort.append(["languagePriority": "asc"])
         }
-        sort.append([ "title.keyword": "asc" ])
+        sort.append(["title.keyword": "asc"])
         query["sort"] = sort
-        
+
         return try await elastic.perform {
             guard
                 let queryData = try? JSONSerialization.data(withJSONObject: query),
@@ -335,7 +328,7 @@ extension WaypointSummaryModel.Elasticsearch {
             else {
                 throw Abort(.internalServerError)
             }
-            
+
             return response.hits.hits.map {
                 let source = $0.source
                 return .init(

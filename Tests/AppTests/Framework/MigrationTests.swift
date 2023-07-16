@@ -1,18 +1,11 @@
-//
-//  MigrationTests.swift
-//  
-//
-//  Created by niklhut on 11.06.22.
-//
-
-@testable import App
-import XCTVapor
 import FluentPostgresDriver
+import XCTVapor
+@testable import App
 
 final class MigrationTests: XCTestCase {
     func testMigrateAndTearDown() async throws {
         let app = Application(.testing)
-        
+
         try configure(app)
         app.databases.reinitialize()
         app.databases.use(
@@ -28,7 +21,7 @@ final class MigrationTests: XCTestCase {
         )
         app.databases.default(to: .psql)
         app.passwords.use(.plaintext)
-        
+
         try await app.autoMigrate()
         try await app.autoRevert()
         app.shutdown()

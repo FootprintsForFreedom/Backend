@@ -1,10 +1,3 @@
-//
-//  ModuleInterface.swift
-//  
-//
-//  Created by niklhut on 01.02.22.
-//
-
 import Vapor
 
 /// Streamlines creating modules.
@@ -13,7 +6,7 @@ public protocol ModuleInterface {
     ///
     /// The module identifier usually consists of the module name.
     static var identifier: String { get }
-    
+
     /// Boots the module with all implemented migrations, hooks and routes.
     /// - Parameter app: The app on which the boot the module.
     func boot(_ app: Application) throws
@@ -23,9 +16,8 @@ public protocol ModuleInterface {
 }
 
 public extension ModuleInterface {
-    func boot(_ app: Application) throws {}
-    func setUp(_ app: Application) throws {}
-    
+    func boot(_ app: Application) throws { }
+    func setUp(_ app: Application) throws { }
+
     static var identifier: String { String(describing: self).dropLast(6).lowercased() }
-    
 }

@@ -1,12 +1,4 @@
-//
-//  HookStorage+Hooks.swift
-//  
-//
-//  Created by niklhut on 01.02.22.
-//
-
 extension HookStorage {
-    
     /// Synchronously register a kook function.
     /// - Parameters:
     ///   - name: The name of the hook function.
@@ -18,7 +10,7 @@ extension HookStorage {
         let pointer = HookFunctionPointer<HookFunction>(name: name, function: function, returnType: ReturnType.self)
         pointers.append(pointer)
     }
-    
+
     /// Synchronously invoke the first hook function with the given name.
     /// - Parameters:
     ///   - name: The name of the hook function to invoke.
@@ -27,7 +19,7 @@ extension HookStorage {
     func invoke<ReturnType>(_ name: String, args: HookArguments = [:]) -> ReturnType? {
         pointers.first { $0.name == name && $0.returnType == ReturnType.self }?.pointer.invoke(args) as? ReturnType
     }
-    
+
     /// Synchronously invoke all hook functions with the given name.
     /// - Parameters:
     ///   - name: The name of the hook function to invoke.

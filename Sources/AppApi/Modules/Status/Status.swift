@@ -1,10 +1,3 @@
-//
-//  Status.swift
-//  
-//
-//  Created by niklhut on 05.06.22.
-//
-
 import Foundation
 
 /// Used to indicate the status of a model.

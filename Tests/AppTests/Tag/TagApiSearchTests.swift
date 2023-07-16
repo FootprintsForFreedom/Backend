@@ -1,24 +1,17 @@
-//
-//  TagApiSearchTests.swift
-//  
-//
-//  Created by niklhut on 04.06.22.
-//
-
-@testable import App
-import XCTVapor
 import Fluent
 import Spec
+import XCTVapor
+@testable import App
 
 final class TagApiSearchTests: AppTestCase, TagTest {
     func testSuccessfulSearchTagReturnsWhenTextInTitle() async throws {
         let tag = try await createNewTag(title: "Ein besonderer Titel \(UUID())", keywords: ["Anders"], verified: true)
         try await tag.detail.$language.load(on: app.db)
-        
+
         let tagCount = try await TagRepositoryModel.query(on: app.db).count()
-        
+
         try await Task.sleep(for: .seconds(1))
-        
+
         try app
             .describe("Search tag should return the tag if it is verified and has the search text in the title")
             .get(tagPath.appending("search/?text=besonder&languageCode=\(tag.detail.language.languageCode)&per=\(tagCount)"))
@@ -34,15 +27,15 @@ final class TagApiSearchTests: AppTestCase, TagTest {
             }
             .test()
     }
-    
+
     func testSuccessfulSearchTagReturnsWhenTextInKeywords() async throws {
         let tag = try await createNewTag(title: "Ein besonderer Titel \(UUID())", keywords: ["Anders"], verified: true)
         try await tag.detail.$language.load(on: app.db)
-        
+
         let tagCount = try await TagRepositoryModel.query(on: app.db).count()
-        
+
         try await Task.sleep(for: .seconds(1))
-        
+
         try app
             .describe("Search tag should return the tag if it is verified and has the search text in the keywords")
             .get(tagPath.appending("search/?text=ander&languageCode=\(tag.detail.language.languageCode)&per=\(tagCount)"))
@@ -58,13 +51,13 @@ final class TagApiSearchTests: AppTestCase, TagTest {
             }
             .test()
     }
-    
+
     func testSuccessfulSearchTagOnlyReturnsVerifiedTags() async throws {
         let tag = try await createNewTag(title: "Ein besonderer Titel \(UUID())", keywords: ["Anders"])
         try await tag.detail.$language.load(on: app.db)
-        
+
         let tagCount = try await TagRepositoryModel.query(on: app.db).count()
-        
+
         try app
             .describe("Search tag should not return the tag if it is unverified")
             .get(tagPath.appending("search/?text=ander&languageCode=\(tag.detail.language.languageCode)&per=\(tagCount)"))
@@ -75,13 +68,13 @@ final class TagApiSearchTests: AppTestCase, TagTest {
             }
             .test()
     }
-    
+
     func testSuccessfulSearchTagDoesNotReturnWhenTextNotInTitleOrKeywords() async throws {
         let tag = try await createNewTag(title: "Ein besonderer Titel \(UUID())", keywords: ["Anders"], verified: true)
         try await tag.detail.$language.load(on: app.db)
-        
+
         let tagCount = try await TagRepositoryModel.query(on: app.db).count()
-        
+
         try app
             .describe("Search tag should not return the tag if it is verified but does not have the search text in the title or keywords")
             .get(tagPath.appending("search/?text=hallo&languageCode=\(tag.detail.language.languageCode)&per=\(tagCount)"))
@@ -92,15 +85,15 @@ final class TagApiSearchTests: AppTestCase, TagTest {
             }
             .test()
     }
-    
+
     func testSuccessfulSearchTagOnlyReturnsDetailsForSpecifiedLanguage() async throws {
         let language = try await createLanguage()
         let language2 = try await createLanguage()
         let tag = try await createNewTag(title: "Ein besonderer Titel \(UUID())", keywords: ["Anders"], verified: true, languageId: language.requireID())
         try await tag.detail.$language.load(on: app.db)
-        
+
         let tagCount = try await TagRepositoryModel.query(on: app.db).count()
-        
+
         try app
             .describe("Search tag should only return tags for the specified language")
             .get(tagPath.appending("search/?text=ander&languageCode=\(language2.languageCode)&per=\(tagCount)"))
@@ -111,12 +104,12 @@ final class TagApiSearchTests: AppTestCase, TagTest {
             }
             .test()
     }
-    
+
     func testSuccessfulSearchTagDoesNotReturnDetailsForDeactivatedLanguage() async throws {
         let language = try await createLanguage()
         let tag = try await createNewTag(title: "Ein besonderer Titel \(UUID())", keywords: ["Anders"], verified: true, languageId: language.requireID())
         try await tag.detail.$language.load(on: app.db)
-        
+
         let adminToken = try await getToken(for: .admin)
         try app
             .describe("Deactivate language as admin should return ok")
@@ -125,16 +118,16 @@ final class TagApiSearchTests: AppTestCase, TagTest {
             .expect(.ok)
             .expect(.json)
             .test()
-        
+
         let tagCount = try await TagRepositoryModel.query(on: app.db).count()
-        
+
         try app
             .describe("Search tag should only return tags for the specified language")
             .get(tagPath.appending("search/?text=ander&languageCode=\(language.languageCode)&per=\(tagCount)"))
             .expect(.notFound)
             .test()
     }
-    
+
     func testSuccessfulSearchTagOnlyReturnsNewestVerifiedDetailForRepository() async throws {
         let language = try await createLanguage()
         let userId = try await getUser(role: .user).requireID()
@@ -142,17 +135,17 @@ final class TagApiSearchTests: AppTestCase, TagTest {
         let newerTag = try await TagDetailModel.createWith(
             verified: true,
             title: "Ein besonderer Titel neu",
-            keywords: (1...5).map { _ in String(Int.random(in: 10...100)) },
+            keywords: (1 ... 5).map { _ in String(Int.random(in: 10 ... 100)) },
             languageId: language.requireID(),
             repositoryId: tag.repository.requireID(),
             userId: userId,
             on: self
         )
-        
+
         let tagCount = try await TagRepositoryModel.query(on: app.db).count()
-        
+
         try await Task.sleep(for: .seconds(1))
-        
+
         try app
             .describe("Search tag should only return the newest verified detail for a tag repository")
             .get(tagPath.appending("search/?text=besonderer&languageCode=\(language.languageCode)&per=\(tagCount)"))
@@ -171,32 +164,32 @@ final class TagApiSearchTests: AppTestCase, TagTest {
             }
             .test()
     }
-    
+
     func testSearchTagNeedsValidText() async throws {
         let tag = try await createNewTag(title: "Ein besonderer Titel \(UUID())", keywords: ["Anders"], verified: true)
         try await tag.detail.$language.load(on: app.db)
-        
+
         let tagCount = try await TagRepositoryModel.query(on: app.db).count()
-        
+
         try app
             .describe("Search tag should return the text query field is empty")
             .get(tagPath.appending("search/?text=&languageCode=\(tag.detail.language.languageCode)&per=\(tagCount)"))
             .expect(.badRequest)
             .test()
-        
+
         try app
             .describe("Search tag should return the text query field is only a whitespace or a newline")
             .get(tagPath.appending("search/?text=%20\n&languageCode=\(tag.detail.language.languageCode)&per=\(tagCount)"))
             .expect(.badRequest)
             .test()
     }
-    
+
     func testSearchTagNeedsValidLanguageCode() async throws {
         let tag = try await createNewTag(title: "Ein besonderer Titel \(UUID())", keywords: ["Anders"], verified: true)
         try await tag.detail.$language.load(on: app.db)
-        
+
         let tagCount = try await TagRepositoryModel.query(on: app.db).count()
-        
+
         try app
             .describe("Search tag should return the text query field is empty")
             .get(tagPath.appending("search/?text=bes&per=\(tagCount)"))
