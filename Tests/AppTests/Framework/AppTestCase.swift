@@ -14,7 +14,7 @@ open class AppTestCase: XCTestCase {
     func createTestApp() async throws -> Application {
         let app = Application(.testing)
 
-        try configure(app)
+        try await configure(app)
         app.databases.reinitialize()
         app.databases.use(
             .postgres(configuration: SQLPostgresConfiguration(

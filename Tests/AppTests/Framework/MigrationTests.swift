@@ -6,7 +6,7 @@ final class MigrationTests: XCTestCase {
     func testMigrateAndTearDown() async throws {
         let app = Application(.testing)
 
-        try configure(app)
+        try await configure(app)
         app.databases.reinitialize()
         app.databases.use(
             .postgres(configuration: SQLPostgresConfiguration(

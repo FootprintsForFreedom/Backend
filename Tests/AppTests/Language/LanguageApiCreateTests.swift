@@ -13,7 +13,7 @@ final class LanguageApiCreateTests: AppTestCase, LanguageTest {
         let languageCode: String = try await {
             var languageCode = languageCode
             if languageCode == nil {
-                try await try app
+                try await app
                     .describe("Moderator should be able to list unused languages.")
                     .get(languagesPath.appending("unused"))
                     .bearerToken(getToken(for: .admin))

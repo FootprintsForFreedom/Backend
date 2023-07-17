@@ -9,7 +9,7 @@ import VaporSecurityHeaders
 
 /// Configures the application.
 /// - Parameter app: The application to configure.
-public func configure(_ app: Application) throws {
+public func configure(_ app: Application) async throws {
     // Reset the middlewares since the security headers middleware should come first
     app.middleware = Middlewares()
     // Add security headers
@@ -93,6 +93,6 @@ public func configure(_ app: Application) throws {
 
     // use automatic database migration
     if app.environment != .production {
-        try app.autoMigrate().wait()
+        try await app.autoMigrate()
     }
 }
