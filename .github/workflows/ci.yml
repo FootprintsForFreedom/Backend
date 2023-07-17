@@ -182,7 +182,7 @@ jobs:
     # Deploy to the github-pages environment
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}/documentation/${BUILD_TARGET_LOWERCASE}
+      url: ${{ steps.deployment.outputs.page_url }}/documentation/${{ env.BUILD_TARGET_LOWERCASE }}
 
     steps:
       - name: Checkout repository
