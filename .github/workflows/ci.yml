@@ -168,6 +168,7 @@ jobs:
       # To build all targets, remove this env variable,
       # and remove --target arg in the building step below.
       BUILD_TARGET: AppApi
+      BUILD_TARGET_LOWERCASE: appapi
 
     concurrency:
       group: "pages"
@@ -181,7 +182,7 @@ jobs:
     # Deploy to the github-pages environment
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}/documentation/${BUILD_TARGET,,}
+      url: ${{ steps.deployment.outputs.page_url }}/documentation/${BUILD_TARGET_LOWERCASE}
 
     steps:
       - name: Checkout repository
