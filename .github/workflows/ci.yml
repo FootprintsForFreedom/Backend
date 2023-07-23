@@ -66,7 +66,6 @@ jobs:
       # To build all targets, remove this env variable,
       # and remove --target arg in the building step below.
       BUILD_TARGET: AppApi
-      BUILD_TARGET_LOWERCASE: appapi
 
     concurrency:
       group: "pages"
@@ -80,9 +79,13 @@ jobs:
     # Deploy to the github-pages environment
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}/documentation/${{ env.BUILD_TARGET_LOWERCASE }}
+      url: ${{ steps.deployment.outputs.page_url }}/documentation/${{ steps.toLowerCase.lowercase_build_target }}
 
     steps:
+      - name: Lowercase build target
+        id: toLowerCase
+        run: INPUT=${{ env.BUILD_TARGET }} echo "::set-output name=lowercase_build_target::${INPUT,,}"
+
       - name: Checkout repository
         uses: actions/checkout@v3
 
