@@ -8,7 +8,10 @@ struct ApiRouter: RouteCollection {
             .grouped("api")
             .grouped("v1")
 
-        let _: [Void] = app.invokeAll("api-routes-v1", args: ["routes": apiRoutes])
-        let _: [Void] = app.invokeAll("api-redirects", args: ["routes": app.routes])
+        let accessTokenMiddlewareApiRoutes = apiRoutes
+            .grouped(UserJWTAccessTokenAuthenticator())
+
+        let _: [Void] = app.invokeAll(.apiRoutesV1, args: [.routes: accessTokenMiddlewareApiRoutes, .routesWithoutAccessTokenMiddleware: apiRoutes])
+        let _: [Void] = app.invokeAll(.apiRedirects, args: [.routes: app.routes])
     }
 }

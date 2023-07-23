@@ -7,7 +7,7 @@ struct LanguageModule: ModuleInterface {
         app.migrations.add(LanguageMigrations.v1())
         try app.migrations.add(LanguageMigrations.seed(elastic: app.elastic))
 
-        app.hooks.register("api-routes-v1", use: router.apiRoutesHook)
+        app.hooks.register(.apiRoutesV1, use: router.apiRoutesHook)
 
         try router.boot(routes: app.routes)
     }

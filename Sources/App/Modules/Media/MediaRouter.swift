@@ -7,7 +7,7 @@ struct MediaRouter: RouteCollection {
     func boot(routes: RoutesBuilder) throws { }
 
     func apiRoutesHook(_ args: HookArguments) {
-        let routes = args["routes"] as! RoutesBuilder
+        let routes = args[.routes] as! RoutesBuilder
 
         apiController.setupRoutes(routes)
         apiController.setupSearchRoutes(routes)

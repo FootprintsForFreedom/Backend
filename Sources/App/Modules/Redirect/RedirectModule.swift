@@ -5,8 +5,8 @@ struct RedirectModule: ModuleInterface {
 
     func boot(_ app: Application) throws {
         app.migrations.add(RedirectMigrations.v1())
-        app.hooks.register("api-routes-v1", use: router.apiRoutesHook)
-        app.hooks.register("api-redirects", use: router.redirectHook)
+        app.hooks.register(.apiRoutesV1, use: router.apiRoutesHook)
+        app.hooks.register(.apiRedirects, use: router.redirectHook)
 
         try router.boot(routes: app.routes)
     }
