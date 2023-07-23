@@ -1,12 +1,12 @@
-import Vapor
 import JWT
+import Vapor
 
 extension UserAccountModel {
     func createSignedTokenPair(in tokenFamily: UserTokenFamilyModel? = nil, on req: Request) async throws -> (refreshToken: String, accessToken: String) {
         /// create token family if necessary
-        let tokenFamily = try tokenFamily ?? UserTokenFamilyModel(userId: self.requireID(), tokenType: .tokenRefresh)
+        let tokenFamily = try tokenFamily ?? UserTokenFamilyModel(userId: requireID(), tokenType: .tokenRefresh)
         /// verify token family belongs to user
-        guard try tokenFamily.$user.id == self.requireID() else {
+        guard try tokenFamily.$user.id == requireID() else {
             throw Abort(.unauthorized)
         }
         /// create tokens for the user
@@ -21,11 +21,11 @@ extension UserAccountModel {
 
     func createSignedVerificationToken(on req: Request) async throws -> String {
         /// check if verification token family exists
-        let existingTokenFamily = try await self.$tokenFamilies.query(on: req.db).filter(\.$tokenType, .equal, .verification).first()
+        let existingTokenFamily = try await $tokenFamilies.query(on: req.db).filter(\.$tokenType, .equal, .verification).first()
         /// create token family if necessary
-        let tokenFamily = try existingTokenFamily ?? UserTokenFamilyModel(userId: self.requireID(), tokenType: .verification)
+        let tokenFamily = try existingTokenFamily ?? UserTokenFamilyModel(userId: requireID(), tokenType: .verification)
         /// verify token family belongs to user
-        guard try tokenFamily.$user.id == self.requireID() else {
+        guard try tokenFamily.$user.id == requireID() else {
             throw Abort(.unauthorized)
         }
         /// create token for user

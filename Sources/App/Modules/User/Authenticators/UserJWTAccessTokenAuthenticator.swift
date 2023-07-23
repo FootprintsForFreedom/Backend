@@ -1,5 +1,5 @@
-import Vapor
 import JWT
+import Vapor
 
 /// Authenticator used to sign in users with a Bearer Token in the format of a JWT.
 struct UserJWTAccessTokenAuthenticator: AsyncJWTAuthenticator {

@@ -71,22 +71,22 @@ extension UserAccountModel {
 
     func ownDetail() throws -> User.Account.Detail {
         try .ownDetail(
-            id: self.requireID(),
-            name: self.name,
-            email: self.email,
-            school: self.school,
-            verified: self.verified,
-            role: self.role
+            id: requireID(),
+            name: name,
+            email: email,
+            school: school,
+            verified: verified,
+            role: role
         )
     }
 
     func adminDetail() throws -> User.Account.Detail {
         try .adminDetail(
-            id: self.requireID(),
-            name: self.name,
-            school: self.school,
-            verified: self.verified,
-            role: self.role
+            id: requireID(),
+            name: name,
+            school: school,
+            verified: verified,
+            role: role
         )
     }
 }

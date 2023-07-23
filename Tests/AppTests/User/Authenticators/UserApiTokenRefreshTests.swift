@@ -1,9 +1,9 @@
 import Fluent
+import JWT
 import Spec
 import XCTVapor
-import JWT
-@testable import JWTKit
 @testable import App
+@testable import JWTKit
 
 final class UserApiTokenRefreshTests: AppTestCase, UserTest {
     let refreshTokenPath = "/api/v1/token-refresh"

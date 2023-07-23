@@ -1,6 +1,6 @@
 import AppApi
-import Vapor
 import JWT
+import Vapor
 
 extension User.Token.Detail: Content { }
 

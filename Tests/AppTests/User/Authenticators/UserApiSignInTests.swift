@@ -1,9 +1,9 @@
 import Fluent
+import JWT
 import Spec
 import XCTVapor
-import JWT
-@testable import JWTKit
 @testable import App
+@testable import JWTKit
 
 final class UserApiSignInTests: AppTestCase, UserTest {
     let signInPath = "/api/v1/sign-in/"
@@ -114,7 +114,6 @@ final class UserApiSignInTests: AppTestCase, UserTest {
         XCTAssertNil(refreshToken.userRole)
         XCTAssertNotNil(refreshToken.tokenFamily)
     }
-
 
     func testLoginWithNonExistingUserFails() throws {
         let credentials = User.Account.Login(email: "thisemail.doesntexist@example.com", password: "123")

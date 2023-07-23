@@ -1,7 +1,7 @@
 import AppApi
 import Fluent
-import Vapor
 import JWT
+import Vapor
 
 struct UserToken: JWTPayload, Equatable {
     /// Calculates the expiration date for a given token type.
@@ -84,7 +84,7 @@ struct UserToken: JWTPayload, Equatable {
     }
 
     func verify(using signer: JWTSigner) throws {
-        try self.expiration.verifyNotExpired()
+        try expiration.verifyNotExpired()
     }
 
     /// Verify that the token was issued after the reference date since otherwise

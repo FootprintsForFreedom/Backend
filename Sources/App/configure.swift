@@ -2,11 +2,11 @@
 @_exported import CollectionConcurrencyKit
 import Fluent
 import FluentPostgresDriver
+import JWT
 import QueuesRedisDriver
 import SwiftSMTPVapor
 import Vapor
 import VaporSecurityHeaders
-import JWT
 
 /// Configures the application.
 /// - Parameter app: The application to configure.

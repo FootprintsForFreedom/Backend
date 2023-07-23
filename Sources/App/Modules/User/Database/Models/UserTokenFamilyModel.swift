@@ -1,5 +1,5 @@
-import Vapor
 import Fluent
+import Vapor
 
 final class UserTokenFamilyModel: DatabaseModelInterface, Authenticatable {
     typealias Module = UserModule
@@ -25,7 +25,7 @@ final class UserTokenFamilyModel: DatabaseModelInterface, Authenticatable {
         tokenType: UserTokenType
     ) {
         self.id = id
-        self.$user.id = userId
+        $user.id = userId
         self.tokenType = tokenType
     }
 }

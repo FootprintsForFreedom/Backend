@@ -7,7 +7,6 @@ extension User.Account.ResetPasswordRequest: Content { }
 extension User.Account.ResetPassword: Content { }
 
 final class UserApiResetPasswordTests: AppTestCase, UserTest {
-
     // MARK: - request reset password
 
     private func resetPasswordRequest(for user: UserAccountModel) -> User.Account.ResetPasswordRequest {
@@ -87,7 +86,7 @@ final class UserApiResetPasswordTests: AppTestCase, UserTest {
     // MARK: - reset password
 
     private func resetPasswordContent(for user: UserAccountModel, with newPassword: String) async throws -> User.Account.ResetPassword {
-        return User.Account.ResetPassword(newPassword: newPassword)
+        User.Account.ResetPassword(newPassword: newPassword)
     }
 
     func testSuccessfulResetPassword() async throws {
@@ -234,7 +233,6 @@ final class UserApiResetPasswordTests: AppTestCase, UserTest {
 
         try await Task.sleep(for: .seconds(1))
         let _ = try await user.createSignedVerificationToken(on: Request(application: app, on: app.eventLoopGroup.next()))
-
 
         try app
             .describe("User should not be verified")
