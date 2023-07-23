@@ -157,6 +157,22 @@ final class WaypointApiCreateTests: AppTestCase, WaypointTest {
             .test()
     }
 
+    func testCreateWaypointWithValidAccessTokenFromDeletedUserFails() async throws {
+        let newWaypoint = try await getWaypointCreateContent()
+        let user = try await getUser(role: .user, verified: true)
+        let token = try await getToken(for: user)
+
+        try await user.delete(force: true, on: app.db)
+
+        try app
+            .describe("Create waypoint with token from verified but already deleted user should fail")
+            .post(waypointsPath)
+            .body(newWaypoint)
+            .bearerToken(token)
+            .expect(.internalServerError)
+            .test()
+    }
+
     func testCreateWaypointNeedsValidTitle() async throws {
         let token = try await getToken(for: .user, verified: true)
         let newWaypoint = try await getWaypointCreateContent(title: "")
