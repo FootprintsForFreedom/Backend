@@ -84,8 +84,8 @@ jobs:
   
       - name: Create Key
         run: |
-          openssl ecparam -name prime256v1 -genkey -noout -out jwtES256.key
-          openssl ec -in jwtES256.key -pubout -out jwtES256.key.pub
+          openssl ecparam -name prime256v1 -genkey -noout -out ./Resources/jwtES256.key
+          openssl ec -in jwtES256.key -pubout -out ./Resources/jwtES256.key.pub
 
       - name: Cache Swift Packages
         uses: actions/cache@v3
