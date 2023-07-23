@@ -1,6 +1,20 @@
 name: Test
 
 on:
+  workflow_call:
+    secrets:
+      POSTGRES_PASSWORD: 
+        required: true
+      MMDB_LICENSE_KEY: 
+        required: true
+      SMTP_HOST: 
+        required: true
+      SMTP_PORT: 
+        required: true
+      SMTP_USERNAME: 
+        required: true
+      SMTP_PASSWORD: 
+        required: true
   pull_request:
     branches:
       - main
