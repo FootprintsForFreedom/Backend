@@ -68,7 +68,7 @@ jobs:
           apt-get -q install imagemagick  -y 
           apt-get -q install ffmpeg -y
           apt-get -q install libgd-dev -y 
-          apt-get -q install curl
+          apt-get -q install curl -y
 
       - name: Download mmdb
         run: |
