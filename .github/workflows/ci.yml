@@ -10,120 +10,12 @@ env:
   REGISTRY: ghcr.io
 
 jobs:
-  code-lint:
-    name: Lint Code
-    runs-on: ubuntu-latest
-    
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Pull formatting docker image
-        run: docker pull ghcr.io/nicklockwood/swiftformat:latest
-
-      - name: Run SwiftLint
-        run: docker run --rm -v ${{ github.workspace }}:/work ghcr.io/nicklockwood/swiftformat:latest /work --lint
-  
-  test:
-    name: Test
-    runs-on: ubuntu-latest
-    container: swift:5.8.1-jammy
-    needs: code-lint
-
-    services:
-      postgres:
-        image: postgres:15-alpine
-        env:
-          POSTGRES_USER: f4f_user
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-          POSTGRES_DB: f4f
-        options: >-
-          --health-start-period 10s
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-
-      redis:
-        image: redis
-        ports:
-          - 6379:6379
-
-      elasticsearch:
-        image: docker.elastic.co/elasticsearch/elasticsearch:8.8.2
-        env:
-          node.name: main-test-node
-          discovery.type: single-node
-          cluster.name: test-cluster
-          bootstrap.memory_lock: true
-          xpack.security.enabled: false
-        ports:
-          - 9200:9200
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Install dependencies
-        run: |
-          apt-get -q update
-          apt-get -q install imagemagick  -y 
-          apt-get -q install ffmpeg -y
-          apt-get -q install libgd-dev -y 
-          apt-get -q install curl -y
-
-      - name: Download mmdb
-        run: |
-          curl 'https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-City&license_key=${{ secrets.MMDB_LICENSE_KEY }}&suffix=tar.gz' -o ./archive.tar.gz
-          tar -xf archive.tar.gz
-          mv GeoLite2-City* GeoLite2-City
-          mkdir Resources
-          mv GeoLite2-City/GeoLite2-City.mmdb ./Resources/GeoLite2-City.mmdb
-  
-      - name: Create Key
-        run: |
-          openssl ecparam -name prime256v1 -genkey -noout -out ./Resources/jwtES256.key
-          openssl ec -in ./Resources/jwtES256.key -pubout -out ./Resources/jwtES256.key.pub
-
-      - name: Cache Swift Packages
-        uses: actions/cache@v3
-        with:
-          path: .build
-          key: ${{ runner.os }}-spm-${{ hashFiles('./Package.resolved') }}
-          restore-keys: |
-            ${{ runner.os }}-spm-
-
-      - name: Run Tests
-        run: swift test
-        env:
-          DATABASE_HOST: postgres
-          DATABASE_PORT: 5432
-          POSTGRES_USER: f4f_user
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-          POSTGRES_DB: f4f
-          REDIS_HOST: redis://redis:6379
-          ELASTIC_URL: http://elasticsearch:9200
-          APP_NAME: "Footprints for Freedom"
-          APP_URL: http://localhost:8080
-          SMTP_HOST: ${{ secrets.SMTP_HOST }}
-          SMTP_PORT: ${{ secrets.SMTP_PORT }}
-          SMTP_ENCRYPTION: starttls
-          SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
-          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
-          MMDB_PATH: GeoLite2-City.mmdb
-          JWT_ECDSA_KEY_PATH: jwtES256.key
-          SEND_MAILS: false
-          SOFT_DELETED_LIFETIME: 30
-          DEFAULT_LOCATION_LATITUDE: 49.872222
-          DEFAULT_LOCATION_LONGITUDE: 8.652778
-          # set it to zero for testing
-          OLD_VERIFIED_LIFETIME: 0
+  lint-and-test:
+    uses: ./.github/workflows/test.yml
 
   publish:
     name: Publish
-    needs: test
+    needs: lint-and-test
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -166,7 +58,7 @@ jobs:
 
   deploy-documentation:
     name: Deploy Documentation
-    needs: test
+    needs: lint-and-test
     runs-on: ubuntu-latest
 
     env:
