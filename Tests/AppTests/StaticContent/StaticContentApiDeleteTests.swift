@@ -128,7 +128,6 @@ final class StaticContentApiDeleteTests: AppTestCase, StaticContentTest {
                 .bearerToken(adminToken)
                 .expect(.forbidden)
                 .test()
-
         }
     }
 }

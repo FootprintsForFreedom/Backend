@@ -267,7 +267,8 @@ struct StaticContentApiController: ApiRepositoryController {
 
         guard !StaticContentMigrations.seed.Slugs.allCases
             .map(\.rawValue)
-            .contains(repository.slug) else {
+            .contains(repository.slug)
+        else {
             throw Abort(.forbidden)
         }
     }
