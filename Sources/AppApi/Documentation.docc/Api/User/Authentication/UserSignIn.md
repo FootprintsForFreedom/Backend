@@ -1,6 +1,6 @@
 # Sign in
 
-Signs a user in and returns a token.
+Signs a user in and returns an access and refresh token pair.
 
 ## Request
 
