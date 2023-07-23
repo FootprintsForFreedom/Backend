@@ -3,7 +3,7 @@ import Spec
 import XCTVapor
 @testable import App
 
-final class UserApiEmailVerificationTests: AppTestCase, UserTest {
+final class UserApiVerificationTests: AppTestCase, UserTest {
     // MARK: - request verification
 
     func testSuccessfulRequestVerification() async throws {
