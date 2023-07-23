@@ -3,18 +3,17 @@ import Vapor
 
 struct UserBasicAuthenticator: AsyncBasicAuthenticator {
     func authenticate(basic: BasicAuthorization, for req: Request) async throws {
-        guard
-            let user = try await UserAccountModel
+        guard let user = try await UserAccountModel
             .query(on: req.db)
             .filter(\.$email == basic.username)
             .first()
         else {
-            return
+            throw Abort(.unauthorized)
         }
 
         guard try req.application.password.verify(basic.password, created: user.password) else {
-            return
+            throw Abort(.unauthorized)
         }
-        req.auth.login(AuthenticatedUser(id: user.id!, email: user.email))
+        req.auth.login(user)
     }
 }

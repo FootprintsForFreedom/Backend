@@ -12,6 +12,12 @@ enum UserMigrations {
                 .case(User.Role.superAdmin.rawValue)
                 .create()
 
+            let tokenType = try await db.enum(UserTokenType.schema)
+                .case(UserTokenType.contentAccess.rawValue)
+                .case(UserTokenType.tokenRefresh.rawValue)
+                .case(UserTokenType.verification.rawValue)
+                .create()
+
             try await db.schema(UserAccountModel.schema)
                 .id()
                 .field(UserAccountModel.FieldKeys.v1.name, .string, .required)
@@ -23,12 +29,12 @@ enum UserMigrations {
                 .unique(on: UserAccountModel.FieldKeys.v1.email)
                 .create()
 
-            try await db.schema(UserTokenModel.schema)
+            try await db.schema(UserTokenFamilyModel.schema)
                 .id()
-                .field(UserTokenModel.FieldKeys.v1.value, .string, .required)
-                .field(UserTokenModel.FieldKeys.v1.userId, .uuid, .required)
-                .foreignKey(UserTokenModel.FieldKeys.v1.userId, references: UserAccountModel.schema, .id, onDelete: .cascade)
-                .unique(on: UserTokenModel.FieldKeys.v1.value)
+                .field(UserTokenFamilyModel.FieldKeys.v1.tokenType, tokenType, .required)
+                .field(UserTokenFamilyModel.FieldKeys.v1.lastTokenRefresh, .datetime, .required)
+                .field(UserTokenFamilyModel.FieldKeys.v1.userId, .uuid, .required)
+                .foreignKey(UserTokenFamilyModel.FieldKeys.v1.userId, references: UserAccountModel.schema, .id, onDelete: .cascade)
                 .create()
 
             try await db.schema(UserVerificationTokenModel.schema)
@@ -43,10 +49,11 @@ enum UserMigrations {
         }
 
         func revert(on db: Database) async throws {
-            try await db.schema(UserTokenModel.schema).delete()
+            try await db.schema(UserTokenFamilyModel.schema).delete()
             try await db.schema(UserVerificationTokenModel.schema).delete()
             try await db.schema(UserAccountModel.schema).delete()
             try await db.enum(User.Role.pathKey).delete()
+            try await db.enum(UserTokenType.schema).delete()
         }
     }
 

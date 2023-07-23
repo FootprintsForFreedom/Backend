@@ -62,15 +62,13 @@ final class RedirectApiDeleteTests: AppTestCase, RedirectTest {
     }
 
     func testDeleteUnverifiedRedirectAsCreatorFails() async throws {
-        let user = try await getUser(role: .user)
-        let userToken = try user.generateToken()
-        try await userToken.create(on: app.db)
+        let token = try await getToken(for: .user)
         let redirect = try await createNewRedirect()
 
         try app
             .describe("A user should not be able to delete a redirect")
             .delete(redirectPath.appending(redirect.requireID().uuidString))
-            .bearerToken(userToken.value)
+            .bearerToken(token)
             .expect(.forbidden)
             .test()
     }

@@ -7,18 +7,6 @@ extension User.Account.ResetPasswordRequest: Content { }
 extension User.Account.ResetPassword: Content { }
 
 final class UserApiResetPasswordTests: AppTestCase, UserTest {
-    private func createNewUser(
-        name: String = "New Test User",
-        email: String = "test-use\(UUID())r@example.com",
-        school: String? = nil,
-        password: String = "password",
-        verified: Bool = false,
-        role: User.Role = .user
-    ) async throws -> UserAccountModel {
-        let user = UserAccountModel(name: name, email: email, school: school, password: password, verified: verified, role: role)
-        try await user.create(on: app.db)
-        return user
-    }
 
     // MARK: - request reset password
 
@@ -43,15 +31,12 @@ final class UserApiResetPasswordTests: AppTestCase, UserTest {
         let resetPasswordRequest = resetPasswordRequest(for: user)
 
         // Get original verification token count
-        let verificationTokenCount = try await UserVerificationTokenModel.query(on: app.db).count()
+        let verificationTokenCount1 = try await user.$tokenFamilies.query(on: app.db).filter(\.$tokenType, .equal, .verification).count()
 
-        let verificationToken = try user.generateVerificationToken()
-        try await verificationToken.save(on: app.db)
+        let _ = try await getToken(type: .verification, for: user)
 
-        let verificationTokens = try await UserVerificationTokenModel.query(on: app.db).all()
-        XCTAssertEqual(verificationTokens.count, verificationTokenCount + 1)
-        XCTAssert(verificationTokens.contains { $0.$user.id == user.id })
-        XCTAssertEqual(verificationTokens.first { $0.$user.id == user.id }!.value, verificationToken.value)
+        let verificationTokenCount2 = try await user.$tokenFamilies.query(on: app.db).filter(\.$tokenType, .equal, .verification).count()
+        XCTAssertEqual(verificationTokenCount2, verificationTokenCount1 + 1)
 
         try app
             .describe("User should successfully request verification")
@@ -60,9 +45,8 @@ final class UserApiResetPasswordTests: AppTestCase, UserTest {
             .expect(.ok)
             .test()
 
-        let newVerificationTokens = try await UserVerificationTokenModel.query(on: app.db).all()
-        XCTAssertEqual(newVerificationTokens.count, verificationTokenCount + 1)
-        XCTAssertNotEqual(newVerificationTokens.first!.value, verificationToken.value)
+        let verificationTokenCount3 = try await user.$tokenFamilies.query(on: app.db).filter(\.$tokenType, .equal, .verification).count()
+        XCTAssertEqual(verificationTokenCount3, verificationTokenCount1 + 1)
     }
 
     func testRequestResetPasswordWithWrongEmailFails() async throws {
@@ -102,18 +86,8 @@ final class UserApiResetPasswordTests: AppTestCase, UserTest {
 
     // MARK: - reset password
 
-    private func verificationToken(for user: UserAccountModel) async throws -> UserVerificationTokenModel {
-        let verificationToken = try user.generateVerificationToken()
-        try await verificationToken.save(on: app.db)
-        return verificationToken
-    }
-
     private func resetPasswordContent(for user: UserAccountModel, with newPassword: String) async throws -> User.Account.ResetPassword {
-        let verificationToken = try user.generateVerificationToken()
-        try await verificationToken.save(on: app.db)
-
-        let resetPassword = User.Account.ResetPassword(token: verificationToken.value, newPassword: newPassword)
-        return resetPassword
+        return User.Account.ResetPassword(newPassword: newPassword)
     }
 
     func testSuccessfulResetPassword() async throws {
@@ -121,11 +95,13 @@ final class UserApiResetPasswordTests: AppTestCase, UserTest {
         let user = try await createNewUser(password: password)
         let newPassword = "my3NewPassword"
         let resetPasswordContent = try await resetPasswordContent(for: user, with: newPassword)
+        let verificationToken = try await getToken(type: .verification, for: user)
 
         try app
             .describe("User should successfully reset password")
             .post(usersPath.appending(user.requireID().uuidString).appending("/resetPassword"))
             .body(resetPasswordContent)
+            .bearerToken(verificationToken)
             .expect(.ok)
             .expect(.json)
             .expect(User.Account.Detail.self) { content in
@@ -157,7 +133,7 @@ final class UserApiResetPasswordTests: AppTestCase, UserTest {
             .expect(.ok)
             .expect(.json)
             .expect(User.Token.Detail.self) { content in
-                XCTAssertEqual(content.access_token.count, 64)
+                XCTAssertEqual(content.user.id, user.id!)
                 XCTAssertEqual(content.user.email, user.email)
             }
             .test()
@@ -177,11 +153,13 @@ final class UserApiResetPasswordTests: AppTestCase, UserTest {
         let user = try await createNewUser()
         let newPassword = "1aB"
         let resetPasswordContent = try await resetPasswordContent(for: user, with: newPassword)
+        let verificationToken = try await getToken(type: .verification, for: user)
 
         try app
             .describe("New user password needs at least six characters; Update password fails")
             .post(usersPath.appending(user.requireID().uuidString).appending("/resetPassword"))
             .body(resetPasswordContent)
+            .bearerToken(verificationToken)
             .expect(.badRequest)
             .test()
     }
@@ -190,11 +168,13 @@ final class UserApiResetPasswordTests: AppTestCase, UserTest {
         let user = try await createNewUser()
         let newPassword = "alllowwercase34"
         let resetPasswordContent = try await resetPasswordContent(for: user, with: newPassword)
+        let verificationToken = try await getToken(type: .verification, for: user)
 
         try app
             .describe("New user password needs at least one uppercased letter; Update password fails")
             .post(usersPath.appending(user.requireID().uuidString).appending("/resetPassword"))
             .body(resetPasswordContent)
+            .bearerToken(verificationToken)
             .expect(.badRequest)
             .test()
     }
@@ -203,11 +183,13 @@ final class UserApiResetPasswordTests: AppTestCase, UserTest {
         let user = try await createNewUser()
         let newPassword = "1NEWPASSWORD"
         let resetPasswordContent = try await resetPasswordContent(for: user, with: newPassword)
+        let verificationToken = try await getToken(type: .verification, for: user)
 
         try app
             .describe("New user password needs at least one lowercased letter; Update password fails")
             .post(usersPath.appending(user.requireID().uuidString).appending("/resetPassword"))
             .body(resetPasswordContent)
+            .bearerToken(verificationToken)
             .expect(.badRequest)
             .test()
     }
@@ -216,11 +198,13 @@ final class UserApiResetPasswordTests: AppTestCase, UserTest {
         let user = try await createNewUser()
         let newPassword = "myNewPassword"
         let resetPasswordContent = try await resetPasswordContent(for: user, with: newPassword)
+        let verificationToken = try await getToken(type: .verification, for: user)
 
         try app
             .describe("New user password needs at least one digit; Update password fails")
             .post(usersPath.appending(user.requireID().uuidString).appending("/resetPassword"))
             .body(resetPasswordContent)
+            .bearerToken(verificationToken)
             .expect(.badRequest)
             .test()
     }
@@ -229,60 +213,86 @@ final class UserApiResetPasswordTests: AppTestCase, UserTest {
         let user = try await createNewUser()
         let newPassword = "my3New\nPassword"
         let resetPasswordContent = try await resetPasswordContent(for: user, with: newPassword)
+        let verificationToken = try await getToken(type: .verification, for: user)
 
         try app
             .describe("New user password must not contain new line; Update password fails")
             .post(usersPath.appending(user.requireID().uuidString).appending("/resetPassword"))
             .body(resetPasswordContent)
+            .bearerToken(verificationToken)
             .expect(.badRequest)
             .test()
     }
 
-    func testResetPasswordWithWrongVerificationTokenFails() async throws {
-        let user = try await createNewUser()
+    func testResetPasswordWithOldVerificationTokenFails() async throws {
+        let user = try await getUser(role: .user)
+        XCTAssertFalse(user.verified)
+        let oldVerificationToken = try await getToken(type: .verification, for: user)
 
-        let _ = try await verificationToken(for: user)
-        let wrongVerificationToken = try user.generateVerificationToken()
         let newPassword = "my3NewPassword"
-        let resetPasswordContent = User.Account.ResetPassword(token: wrongVerificationToken.value, newPassword: newPassword)
+        let resetPasswordContent = User.Account.ResetPassword(newPassword: newPassword)
+
+        try await Task.sleep(for: .seconds(1))
+        let _ = try await user.createSignedVerificationToken(on: Request(application: app, on: app.eventLoopGroup.next()))
+
 
         try app
-            .describe("User should not be able to reset password")
+            .describe("User should not be verified")
             .post(usersPath.appending(user.requireID().uuidString).appending("/resetPassword"))
+            .body(resetPasswordContent)
+            .bearerToken(oldVerificationToken)
+            .expect(.unauthorized)
+            .test()
+    }
+
+    func testResetPasswordWithTokenFromOtherUserFails() async throws {
+        let user = try await getUser(role: .user)
+        XCTAssertFalse(user.verified)
+        let _ = try await getToken(type: .verification, for: user)
+        let otherUser = try await getUser(role: .user)
+        XCTAssertFalse(otherUser.verified)
+        let wrongVerificationToken = try await getToken(type: .verification, for: otherUser)
+
+        let newPassword = "my3NewPassword"
+        let resetPasswordContent = User.Account.ResetPassword(newPassword: newPassword)
+
+        try app
+            .describe("User should not be verified")
+            .post(usersPath.appending(user.requireID().uuidString).appending("/resetPassword"))
+            .bearerToken(wrongVerificationToken)
             .body(resetPasswordContent)
             .expect(.unauthorized)
             .test()
     }
 
-    func testVerificationWithoutSavedTokenFails() async throws {
-        let user = try await createNewUser()
+    func testPasswordResetWithAccessTokenFails() async throws {
+        let user = try await getUser(role: .user)
+        let token = try await getToken(for: user)
 
-        let wrongVerificationToken = try user.generateVerificationToken()
         let newPassword = "my3NewPassword"
-        let resetPasswordContent = User.Account.ResetPassword(token: wrongVerificationToken.value, newPassword: newPassword)
+        let resetPasswordContent = User.Account.ResetPassword(newPassword: newPassword)
 
         try app
-            .describe("User should not be able to reset password")
+            .describe("Access Token should not be usable to request new token")
             .post(usersPath.appending(user.requireID().uuidString).appending("/resetPassword"))
             .body(resetPasswordContent)
+            .bearerToken(token)
             .expect(.unauthorized)
             .test()
     }
 
-    func testVerificationWithOldTokenFails() async throws {
-        let user = try await createNewUser()
+    func testPasswordResetWithRefreshTokenFails() async throws {
+        let user = try await getUser(role: .user)
+        let token = try await getToken(type: .tokenRefresh, for: user)
 
-        let verificationToken = try await verificationToken(for: user)
-        verificationToken.createdAt = Date() - (60 * 60 * 60 * 24)
-        try await verificationToken.update(on: app.db)
         let newPassword = "my3NewPassword"
-        let resetPasswordContent = User.Account.ResetPassword(token: verificationToken.value, newPassword: newPassword)
-        XCTAssertGreaterThan(abs(verificationToken.createdAt!.timeIntervalSinceNow), 60 * 60 * 60 * 24)
+        let resetPasswordContent = User.Account.ResetPassword(newPassword: newPassword)
 
         try app
-            .describe("User should not be able to reset password")
+            .describe("Verification token should not be usable to request new token")
             .post(usersPath.appending(user.requireID().uuidString).appending("/resetPassword"))
             .body(resetPasswordContent)
+            .bearerToken(token)
             .expect(.unauthorized)
             .test()
     }

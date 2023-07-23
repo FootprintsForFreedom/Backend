@@ -52,6 +52,14 @@ extension Environment {
     /// The app name.
     static let appName = Self.get("APP_NAME")!
 
+    /// The path of the private **ECDSA**  key used for JWTs inside the resources directory.
+    ///
+    /// The private key is expected to be at the same path extended with `.pub`.
+    ///
+    /// > Important:
+    /// The key must be an **ECDSA** key.
+    static let jwtEcdsaKeyPath = Self.get("JWT_ECDSA_KEY_PATH")!
+
     /// The lifetime of soft deleted models in days.
     ///
     /// It is used to determine when to delete a soft deleted model in the cleanup job.

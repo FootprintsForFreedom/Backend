@@ -13,18 +13,16 @@ extension UserApiController {
         try await RequestValidator(requestResetPasswordValidators()).validate(req)
         let input = try req.content.decode(User.Account.ResetPasswordRequest.self)
 
-        let possibleUser = try await UserAccountModel.query(on: req.db)
+        guard let user = try await UserAccountModel.query(on: req.db)
             .filter(\.$email, .equal, input.email)
             .first()
-
-        guard let user = possibleUser else {
+        else {
             throw Abort(.notFound)
         }
 
-        try await user.createNewVerificationToken(req)
-
-        try await user.$verificationToken.load(on: req.db)
-        try await UserRequestPasswordResetMail.send(for: user, on: req)
+        /// Create signed verification token
+        let signedVerificationToken = try await user.createSignedVerificationToken(on: req)
+        try await UserRequestPasswordResetMail.send(for: user, with: signedVerificationToken, on: req)
 
         return .ok
     }
@@ -33,23 +31,29 @@ extension UserApiController {
 
     @AsyncValidatorBuilder
     func resetPasswordValidators() -> [AsyncValidator] {
-        KeyedContentValidator<String>.required("token")
         KeyedContentValidator<String>.required("newPassword")
     }
 
     func resetPasswordApi(_ req: Request) async throws -> User.Account.Detail {
+        let user = try req.auth.require(UserAccountModel.self)
+
+        /// check the user with the token is the same one as the user in the request path
+        guard try user.requireID() == identifier(req) else {
+            throw Abort(.unauthorized)
+        }
+
         try await RequestValidator(resetPasswordValidators()).validate(req)
         let input = try req.content.decode(User.Account.ResetPassword.self)
 
-        let user = try await findBy(identifier(req), on: req.db)
-
-        try await user.verifyToken(req, input.token)
-
         /// change the password if the user is verified and the token therefore correct
         try user.setPassword(to: input.newPassword, on: req)
+
         /// User is verified after password reset since he has access to his email
         user.verified = true
         try await user.update(on: req.db)
+
+        /// invalidate the verification token after it has been used by deleting the token family
+        try await user.$tokenFamilies.query(on: req.db).filter(\.$tokenType, .equal, .verification).delete(force: true)
 
         return try await detailOutput(req, user)
     }
@@ -58,11 +62,16 @@ extension UserApiController {
 
     func setupResetPasswordRoutes(_ routes: RoutesBuilder) {
         let baseRoutes = getBaseRoutes(routes)
-        let resetPasswordRoutes = baseRoutes
+
+        baseRoutes
             .grouped(ApiModel.pathIdComponent)
+            .grouped(UserJWTVerificationTokenAuthenticator())
             .grouped("resetPassword")
-        let requestResetPasswordRoutes = baseRoutes.grouped("resetPassword")
-        resetPasswordRoutes.post(use: resetPasswordApi)
-        requestResetPasswordRoutes.post(use: requestResetPasswordApi)
+            .post(use: resetPasswordApi)
+
+        baseRoutes
+            .grouped(UserJWTAccessTokenAuthenticator())
+            .grouped("resetPassword")
+            .post(use: requestResetPasswordApi)
     }
 }

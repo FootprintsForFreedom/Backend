@@ -65,15 +65,13 @@ final class StaticContentApiDeleteTests: AppTestCase, StaticContentTest {
     }
 
     func testDeleteUnverifiedStaticContentAsCreatorFails() async throws {
-        let user = try await getUser(role: .user)
-        let userToken = try user.generateToken()
-        try await userToken.create(on: app.db)
+        let userToken = try await getToken(for: .user)
         let (staticContentRepository, _) = try await createNewStaticContent()
 
         try app
             .describe("A user should not be able to delete a staticContent")
             .delete(staticContentPath.appending(staticContentRepository.requireID().uuidString))
-            .bearerToken(userToken.value)
+            .bearerToken(userToken)
             .expect(.forbidden)
             .test()
     }

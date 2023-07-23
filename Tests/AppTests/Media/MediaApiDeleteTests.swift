@@ -69,14 +69,14 @@ final class MediaApiDeleteTests: AppTestCase, MediaTest {
 
     func testDeleteUnverifiedMediaAsCreatorFails() async throws {
         let user = try await getUser(role: .user)
-        let userToken = try user.generateToken()
-        try await userToken.create(on: app.db)
+        let token = try await getToken(for: user)
+
         let (mediaRepository, _, _) = try await createNewMedia(userId: user.requireID())
 
         try app
             .describe("A user should not be able to delete a waypoint")
             .delete(mediaPath.appending(mediaRepository.requireID().uuidString))
-            .bearerToken(userToken.value)
+            .bearerToken(token)
             .expect(.forbidden)
             .test()
     }

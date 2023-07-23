@@ -3,8 +3,6 @@ import Spec
 import XCTVapor
 @testable import App
 
-extension User.Account.Verification: Content { }
-
 final class UserApiEmailVerificationTests: AppTestCase, UserTest {
     // MARK: - request verification
 
@@ -25,30 +23,26 @@ final class UserApiEmailVerificationTests: AppTestCase, UserTest {
         XCTAssertFalse(user.verified)
 
         // Get original verification token count
-        let verificationTokenCount = try await UserVerificationTokenModel.query(on: app.db).count()
+        let verificationTokenCount1 = try await user.$tokenFamilies.query(on: app.db).filter(\.$tokenType, .equal, .verification).count()
 
-        let verificationToken = try user.generateVerificationToken()
-        try await verificationToken.save(on: app.db)
+        let _ = try await getToken(type: .verification, for: user)
 
-        let verificationTokens = try await UserVerificationTokenModel.query(on: app.db).all()
-        XCTAssertEqual(verificationTokens.count, verificationTokenCount + 1)
-        XCTAssert(verificationTokens.contains { $0.$user.id == user.id })
-        XCTAssertEqual(verificationTokens.first { $0.$user.id == user.id }!.value, verificationToken.value)
+        let verificationTokenCount2 = try await user.$tokenFamilies.query(on: app.db).filter(\.$tokenType, .equal, .verification).count()
+        XCTAssertEqual(verificationTokenCount2, verificationTokenCount1 + 1)
 
         try app
-            .describe("User should successfully request verification")
+            .describe("User should successfully request verification and thereby delete old verification tokens")
             .post(usersPath.appending(user.requireID().uuidString).appending("/requestVerification"))
             .bearerToken(token)
             .expect(.ok)
             .test()
 
-        let newVerificationTokens = try await UserVerificationTokenModel.query(on: app.db).all()
-        XCTAssertEqual(newVerificationTokens.count, verificationTokenCount + 1)
-        XCTAssertNotEqual(newVerificationTokens.first!.value, verificationToken.value)
+        let verificationTokenCount3 = try await user.$tokenFamilies.query(on: app.db).filter(\.$tokenType, .equal, .verification).count()
+        XCTAssertEqual(verificationTokenCount3, verificationTokenCount1 + 1)
     }
 
     func testRequestVerificationFromDifferentUserFails() async throws {
-        let user = try await createNewUser()
+        let user = try await getUser(role: .user)
         XCTAssertFalse(user.verified)
 
         let token = try await getToken(for: .user)
@@ -81,7 +75,7 @@ final class UserApiEmailVerificationTests: AppTestCase, UserTest {
             .test()
     }
 
-    func testRequestVerificationWihtoutTokenFails() async throws {
+    func testRequestVerificationWithoutTokenFails() async throws {
         let user = try await createNewUser()
         XCTAssertFalse(user.verified)
 
@@ -94,115 +88,96 @@ final class UserApiEmailVerificationTests: AppTestCase, UserTest {
 
     // MARK: - verification
 
-    private func verificationToken(for user: UserAccountModel) async throws -> UserVerificationTokenModel {
-        let verificationToken = try user.generateVerificationToken()
-        try await verificationToken.save(on: app.db)
-        return verificationToken
-    }
-
-    func testSuccessfulUserVerificationWhenSignedIn() async throws {
-        let (user, token) = try await createNewUserWithToken()
+    func testSuccessfulUserVerification() async throws {
+        let user = try await getUser(role: .user)
         XCTAssertFalse(user.verified)
 
         // Get original verification token count
-        let verificationTokenCount = try await UserVerificationTokenModel.query(on: app.db).count()
+        let initialVerificationTokenCount = try await user.$tokenFamilies.query(on: app.db).filter(\.$tokenType, .equal, .verification).count()
+        XCTAssertEqual(initialVerificationTokenCount, 0)
 
-        let verificationToken = try await verificationToken(for: user)
-
-        let urlQuery = "?token=\(verificationToken.value)"
+        let verificationToken = try await getToken(type: .verification, for: user)
 
         try app
-            .describe("User should be verified successfully and get own detail content when signed in")
-            .post(usersPath.appending(user.requireID().uuidString.appending("/verify\(urlQuery)")))
+            .describe("User should be verified successfully and get own detail content")
+            .post(usersPath.appending(user.requireID().uuidString.appending("/verify")))
+            .bearerToken(verificationToken)
+            .expect(.ok)
+            .expect(.json)
+            .expect(User.Account.Detail.self) { content in
+                XCTAssertEqual(content.id, user.id)
+                XCTAssertEqual(content.name, user.name)
+                XCTAssertNil(content.email)
+                XCTAssertEqual(content.school, user.school)
+                XCTAssertNil(content.verified)
+                XCTAssertNil(content.role)
+                Task {
+                    guard let user = try await UserAccountModel.find(user.id, on: self.app.db) else {
+                        XCTFail()
+                        return
+                    }
+                    // User is verified after password reset since he has access to his email
+                    XCTAssertEqual(user.verified, true)
+                }
+            }
+            .test()
+
+        // check token is deleted after verification
+        let verificationTokenCount = try await user.$tokenFamilies.query(on: app.db).filter(\.$tokenType, .equal, .verification).count()
+        XCTAssertEqual(verificationTokenCount, 0)
+    }
+
+    func testVerificationWithOldVerificationTokenFails() async throws {
+        let user = try await getUser(role: .user)
+        XCTAssertFalse(user.verified)
+        let oldVerificationToken = try await getToken(type: .verification, for: user)
+        try await Task.sleep(for: .seconds(1))
+        let _ = try await user.createSignedVerificationToken(on: Request(application: app, on: app.eventLoopGroup.next()))
+
+        try app
+            .describe("User should not be verified")
+            .post(usersPath.appending(user.requireID().uuidString.appending("/verify")))
+            .bearerToken(oldVerificationToken)
+            .expect(.unauthorized)
+            .test()
+    }
+
+    func testVerificationWithTokenFromOtherUserFails() async throws {
+        let user = try await getUser(role: .user)
+        XCTAssertFalse(user.verified)
+        let _ = try await getToken(type: .verification, for: user)
+        let otherUser = try await getUser(role: .user)
+        XCTAssertFalse(otherUser.verified)
+        let wrongVerificationToken = try await getToken(type: .verification, for: otherUser)
+
+        try app
+            .describe("User should not be verified")
+            .post(usersPath.appending(user.requireID().uuidString.appending("/verify")))
+            .bearerToken(wrongVerificationToken)
+            .expect(.unauthorized)
+            .test()
+    }
+
+    func testVerificationWithAccessTokenFails() async throws {
+        let user = try await getUser(role: .user)
+        let token = try await getToken(for: user)
+
+        try app
+            .describe("Access Token should not be usable to request new token")
+            .post(usersPath.appending(user.requireID().uuidString.appending("/verify")))
             .bearerToken(token)
-            .expect(.ok)
-            .expect(.json)
-            .expect(User.Account.Detail.self) { content in
-                XCTAssertEqual(content.id, user.id)
-                XCTAssertEqual(content.name, user.name)
-                XCTAssertEqual(content.email, user.email)
-                XCTAssertEqual(content.school, user.school)
-                XCTAssertEqual(content.verified, true)
-                XCTAssertEqual(content.role, user.role)
-            }
-            .test()
-
-        // check token is deleted after verification
-        let verificationTokens = try await UserVerificationTokenModel.query(on: app.db).all()
-        XCTAssertEqual(verificationTokens.count, verificationTokenCount)
-    }
-
-    func testSuccessfulUserVerificationWithoutBearerToken() async throws {
-        let user = try await createNewUser()
-        XCTAssertFalse(user.verified)
-
-        // Get original verification token count
-        let verificationTokenCount = try await UserVerificationTokenModel.query(on: app.db).count()
-
-        let verificationToken = try await verificationToken(for: user)
-
-        let urlQuery = "?token=\(verificationToken.value)"
-
-        try app
-            .describe("User should be verified successfully and get public detail content when not signed in")
-            .post(usersPath.appending(user.requireID().uuidString.appending("/verify\(urlQuery)")))
-            .expect(.ok)
-            .expect(.json)
-            .expect(User.Account.Detail.self) { content in
-                XCTAssertEqual(content.id, user.id)
-                XCTAssertEqual(content.name, user.name)
-                XCTAssertEqual(content.school, user.school)
-            }
-            .test()
-
-        // check token is deleted after verification
-        let verificationTokens = try await UserVerificationTokenModel.query(on: app.db).all()
-        XCTAssertEqual(verificationTokens.count, verificationTokenCount)
-    }
-
-    func testVerificationWithWrongVerificationTokenFails() async throws {
-        let user = try await createNewUser()
-        XCTAssertFalse(user.verified)
-        let _ = try await verificationToken(for: user)
-        let wrongVerificationToken = try user.generateVerificationToken()
-
-        let urlQuery = "?token=\(wrongVerificationToken.value)"
-
-        try app
-            .describe("User should not be verified")
-            .post(usersPath.appending(user.requireID().uuidString.appending("/verify\(urlQuery)")))
             .expect(.unauthorized)
             .test()
     }
 
-    func testVerificationWithoutSavedTokenFails() async throws {
-        let user = try await createNewUser()
-        XCTAssertFalse(user.verified)
-        let wrongVerificationToken = try user.generateVerificationToken()
-
-        let urlQuery = "?token=\(wrongVerificationToken.value)"
+    func testVerificationWithRefreshTokenFails() async throws {
+        let user = try await getUser(role: .user)
+        let token = try await getToken(type: .tokenRefresh, for: user)
 
         try app
-            .describe("User should not be verified")
-            .post(usersPath.appending(user.requireID().uuidString.appending("/verify\(urlQuery)")))
-            .expect(.unauthorized)
-            .test()
-    }
-
-    func testVerificationWithOldTokenFails() async throws {
-        let user = try await createNewUser()
-        XCTAssertFalse(user.verified)
-        let verificationToken = try await verificationToken(for: user)
-        // Set the created date back one day
-        verificationToken.createdAt = Date() - (60 * 60 * 60 * 24)
-        try await verificationToken.update(on: app.db)
-        XCTAssertGreaterThan(abs(verificationToken.createdAt!.timeIntervalSinceNow), 60 * 60 * 60 * 24)
-
-        let urlQuery = "?token=\(verificationToken.value)"
-
-        try app
-            .describe("User should not be verified")
-            .post(usersPath.appending(user.requireID().uuidString.appending("/verify\(urlQuery)")))
+            .describe("Verification token should not be usable to request new token")
+            .post(usersPath.appending(user.requireID().uuidString.appending("/verify")))
+            .bearerToken(token)
             .expect(.unauthorized)
             .test()
     }

@@ -25,18 +25,6 @@ public extension User.Account {
         }
     }
 
-    /// Used to verify a user's email address.
-    struct Verification: Codable {
-        /// The verification token for the user email.
-        public let token: String
-
-        /// Creates a user email verification object.
-        /// - Parameter token: The verification token for the user email.
-        public init(token: String) {
-            self.token = token
-        }
-    }
-
     /// Used to request a password reset.
     struct ResetPasswordRequest: Codable {
         /// The email address for the user who forgot his password.
@@ -50,18 +38,16 @@ public extension User.Account {
     }
 
     /// Used to reset a user password.
+    ///
+    /// The token needs to be sent as a bearer Token
     struct ResetPassword: Codable {
-        /// The token for the user to reset his password.
-        public let token: String
         /// The new password set by the user for his account.
         public let newPassword: String
 
         /// Creates a user reset password object.
         /// - Parameters:
-        ///   - token: The token for the user to reset his password.
         ///   - newPassword: The new password set by the user for his account.
-        public init(token: String, newPassword: String) {
-            self.token = token
+        public init(newPassword: String) {
             self.newPassword = newPassword
         }
     }

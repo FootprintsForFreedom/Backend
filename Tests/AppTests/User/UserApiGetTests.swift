@@ -4,19 +4,6 @@ import XCTVapor
 @testable import App
 
 final class UserApiGetTests: AppTestCase, UserTest {
-    private func createNewUser(
-        name: String = "New Test User",
-        email: String = "test-user\(UUID())@example.com",
-        school: String? = nil,
-        password: String = "password",
-        verified: Bool = false,
-        role: User.Role = .user
-    ) async throws -> UserAccountModel {
-        let user = try UserAccountModel(name: name, email: email, school: school, password: app.password.hash(password), verified: verified, role: role)
-        try await user.create(on: app.db)
-        return user
-    }
-
     func testSuccessfulListUsers() async throws {
         let moderatorToken = try await getToken(for: .admin)
         let user = try await createNewUser()
@@ -73,13 +60,12 @@ final class UserApiGetTests: AppTestCase, UserTest {
 
     func testGetUserAsSelf() async throws {
         let user = try await createNewUser()
-        let ownToken = try user.generateToken()
-        try await ownToken.create(on: app.db)
+        let token = try await getToken(for: user)
 
         try app
             .describe("Get user should return ok")
             .get(usersPath.appending(user.requireID().uuidString))
-            .bearerToken(ownToken.value)
+            .bearerToken(token)
             .expect(.ok)
             .expect(.json)
             .expect(User.Account.Detail.self) { content in

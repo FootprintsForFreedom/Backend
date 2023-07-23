@@ -7,6 +7,10 @@ extension Environment {
     static let pgTestDbName = Self.get("POSTGRES_TEST_DB") ?? pgDbName
 }
 
+enum AppTestCaseError: Error {
+    case appNotFound
+}
+
 open class AppTestCase: XCTestCase {
     var app: Application!
     var moderatorToken: String!
@@ -27,7 +31,6 @@ open class AppTestCase: XCTestCase {
             )),
             as: .psql
         )
-        debugPrint(app.databases)
         app.databases.default(to: .psql)
         app.passwords.use(.plaintext)
         try await app.autoMigrate()
@@ -40,6 +43,7 @@ open class AppTestCase: XCTestCase {
     }
 
     override open func tearDown() async throws {
+        guard let app else { throw AppTestCaseError.appNotFound }
         let waypointCount = try await WaypointDetailModel.query(on: app.db).count()
         let languageCount = try await LanguageModel.query(on: app.db).count()
         if waypointCount > 50 || languageCount > 100 {
@@ -55,14 +59,27 @@ open class AppTestCase: XCTestCase {
         return newUser
     }
 
-    func getToken(for user: UserAccountModel) async throws -> String {
-        let token = try user.generateToken()
-        try await token.create(on: app.db)
-        return token.value
+    func getUnsignedAndSignedToken(type tokenType: UserTokenType = .contentAccess, for user: UserAccountModel) async throws -> (unsignedToken: UserToken, signedToken: String) {
+        let token: UserToken!
+        switch tokenType {
+        case .contentAccess: token = try UserToken.createAccessToken(for: user)
+        case .tokenRefresh: token = try await UserToken.createRefreshToken(for: user, on: app.db)
+        case .verification: token = try await UserToken.createVerificationToken(for: user, on: app.db)
+        }
+        let signedToken = try app.jwt.signers.sign(token, kid: .private)
+        return (token, signedToken)
     }
 
-    func getToken(for userRole: User.Role, verified: Bool = false) async throws -> String {
+    func getToken(type tokenType: UserTokenType = .contentAccess, for user: UserAccountModel) async throws -> String {
+        try await getUnsignedAndSignedToken(type: tokenType, for: user).signedToken
+    }
+
+    func getUnsignedAndSignedToken(type tokenType: UserTokenType = .contentAccess, for userRole: User.Role, verified: Bool = false) async throws -> (unsignedToken: UserToken, signedToken: String) {
         let newUser = try await getUser(role: userRole, verified: verified)
-        return try await getToken(for: newUser)
+        return try await getUnsignedAndSignedToken(type: tokenType, for: newUser)
+    }
+
+    func getToken(type tokenType: UserTokenType = .contentAccess, for userRole: User.Role, verified: Bool = false) async throws -> String {
+        try await getUnsignedAndSignedToken(type: tokenType, for: userRole, verified: verified).signedToken
     }
 }

@@ -1,31 +1,21 @@
 import Fluent
 import Spec
 import XCTVapor
+import JWT
+@testable import JWTKit
 @testable import App
 
-extension User.Account.Login: Content { }
-
-final class UserApiSignInTests: AppTestCase {
+final class UserApiSignInTests: AppTestCase, UserTest {
     let signInPath = "/api/v1/sign-in/"
 
-    private func createNewUser(
-        name: String = "New Test User",
-        email: String = "test-user\(UUID())@example.com",
-        school: String? = nil,
-        password: String = "password",
-        verified: Bool = false,
-        role: User.Role = .user
-    ) async throws -> (user: UserAccountModel, password: String) {
-        let user = try UserAccountModel(name: name, email: email, school: school, password: app.password.hash(password), verified: verified, role: role)
-        try await user.create(on: app.db)
-
-        return (user, password)
-    }
-
-    func testSuccessfulLogin() async throws {
-        let (user, password) = try await createNewUser()
+    func testSuccessfulCredentialsLogin() async throws {
+        let password = UUID().uuidString
+        let user = try await createNewUser(password: password)
 
         let credentials = User.Account.Login(email: user.email, password: password)
+
+        var accessTokenString: String!
+        var refreshTokenString: String!
 
         try app
             .describe("Credentials login should return ok")
@@ -34,11 +24,97 @@ final class UserApiSignInTests: AppTestCase {
             .expect(.ok)
             .expect(.json)
             .expect(User.Token.Detail.self) { content in
-                XCTAssertEqual(content.access_token.count, 64)
+                XCTAssertEqual(content.user.id, user.id!)
                 XCTAssertEqual(content.user.email, user.email)
+                accessTokenString = content.accessToken
+                refreshTokenString = content.refreshToken
             }
             .test()
+
+        // test signature
+        XCTAssertNoThrow(try app.jwt.signers.verify(accessTokenString, as: UserToken.self))
+        XCTAssertNoThrow(try app.jwt.signers.verify(refreshTokenString, as: UserToken.self))
+
+        // test access token
+        let accessTokenParser = try JWTParser(token: accessTokenString.bytes)
+        let accessToken = try accessTokenParser.payload(as: UserToken.self, jsonDecoder: app.jwt.signers.defaultJSONDecoder)
+
+        XCTAssertNoThrow(try accessToken.verify(intendedAudienceIncludes: .contentAccess))
+        XCTAssertEqual(accessToken.userId, user.id!)
+        XCTAssertEqual(accessToken.emailVerified, user.verified)
+        XCTAssertEqual(accessToken.userRole, user.role)
+        XCTAssertNil(accessToken.tokenFamily)
+
+        // test refresh token
+        let refreshTokenParser = try JWTParser(token: refreshTokenString.bytes)
+        let refreshToken = try refreshTokenParser.payload(as: UserToken.self, jsonDecoder: app.jwt.signers.defaultJSONDecoder)
+        let refreshTokenFamily = try await UserTokenFamilyModel.find(refreshToken.tokenFamily, on: app.db)
+
+        XCTAssertNoThrow(try refreshToken.verify(intendedAudienceIncludes: .tokenRefresh))
+        XCTAssertNotNil(refreshTokenFamily)
+        if let refreshTokenFamily {
+            XCTAssertNoThrow(try refreshToken.verify(issuedAfter: refreshTokenFamily.lastTokenRefresh))
+        }
+        XCTAssertEqual(refreshToken.userId, user.id!)
+        XCTAssertNil(refreshToken.emailVerified)
+        XCTAssertNil(refreshToken.userRole)
+        XCTAssertNotNil(refreshToken.tokenFamily)
     }
+
+    func testSuccessfulBasicAuthLogin() async throws {
+        let password = UUID().uuidString
+        let user = try await createNewUser(password: password)
+
+        let basicAuthString = "\(user.email):\(password)"
+        let basicAuthBase64String = Data(basicAuthString.utf8).base64EncodedString()
+
+        var accessTokenString: String!
+        var refreshTokenString: String!
+
+        try app
+            .describe("Credentials login should return ok")
+            .post(signInPath)
+            .header("Authorization", "Basic \(basicAuthBase64String)")
+            .expect(.ok)
+            .expect(.json)
+            .expect(User.Token.Detail.self) { content in
+                XCTAssertEqual(content.user.id, user.id!)
+                XCTAssertEqual(content.user.email, user.email)
+                accessTokenString = content.accessToken
+                refreshTokenString = content.refreshToken
+            }
+            .test()
+
+        // test signature
+        XCTAssertNoThrow(try app.jwt.signers.verify(accessTokenString, as: UserToken.self))
+        XCTAssertNoThrow(try app.jwt.signers.verify(refreshTokenString, as: UserToken.self))
+
+        // test access token
+        let accessTokenParser = try JWTParser(token: accessTokenString.bytes)
+        let accessToken = try accessTokenParser.payload(as: UserToken.self, jsonDecoder: app.jwt.signers.defaultJSONDecoder)
+
+        XCTAssertNoThrow(try accessToken.verify(intendedAudienceIncludes: .contentAccess))
+        XCTAssertEqual(accessToken.userId, user.id!)
+        XCTAssertEqual(accessToken.emailVerified, user.verified)
+        XCTAssertEqual(accessToken.userRole, user.role)
+        XCTAssertNil(accessToken.tokenFamily)
+
+        // test refresh token
+        let refreshTokenParser = try JWTParser(token: refreshTokenString.bytes)
+        let refreshToken = try refreshTokenParser.payload(as: UserToken.self, jsonDecoder: app.jwt.signers.defaultJSONDecoder)
+        let refreshTokenFamily = try await UserTokenFamilyModel.find(refreshToken.tokenFamily, on: app.db)
+
+        XCTAssertNoThrow(try refreshToken.verify(intendedAudienceIncludes: .tokenRefresh))
+        XCTAssertNotNil(refreshTokenFamily)
+        if let refreshTokenFamily {
+            XCTAssertNoThrow(try refreshToken.verify(issuedAfter: refreshTokenFamily.lastTokenRefresh))
+        }
+        XCTAssertEqual(refreshToken.userId, user.id!)
+        XCTAssertNil(refreshToken.emailVerified)
+        XCTAssertNil(refreshToken.userRole)
+        XCTAssertNotNil(refreshToken.tokenFamily)
+    }
+
 
     func testLoginWithNonExistingUserFails() throws {
         let credentials = User.Account.Login(email: "thisemail.doesntexist@example.com", password: "123")
@@ -52,7 +128,7 @@ final class UserApiSignInTests: AppTestCase {
     }
 
     func testLoginWithIncorrectPasswordFails() async throws {
-        let (user, _) = try await createNewUser()
+        let user = try await getUser(role: .user)
 
         let credentials = User.Account.Login(email: user.email, password: "wrongPassword")
 
@@ -61,42 +137,6 @@ final class UserApiSignInTests: AppTestCase {
             .post(signInPath)
             .body(credentials)
             .expect(.unauthorized)
-            .test()
-    }
-
-    func testLoginReturnsDifferentTokensForDifferentUser() async throws {
-        let (user1, password1) = try await createNewUser()
-        let (user2, password2) = try await createNewUser(email: "test-user.\(UUID())@example.com")
-
-        let credentials1 = User.Account.Login(email: user1.email, password: password1)
-        let credentials2 = User.Account.Login(email: user2.email, password: password2)
-
-        var token1: String!
-
-        try app
-            .describe("First user should login successfully and get token")
-            .post(signInPath)
-            .body(credentials1)
-            .expect(.ok)
-            .expect(.json)
-            .expect(User.Token.Detail.self) { content in
-                XCTAssertEqual(content.access_token.count, 64)
-                token1 = content.access_token
-                XCTAssertEqual(content.user.email, user1.email)
-            }
-            .test()
-
-        try app
-            .describe("Second user should login successfully and get different token than user one")
-            .post(signInPath)
-            .body(credentials2)
-            .expect(.ok)
-            .expect(.json)
-            .expect(User.Token.Detail.self) { content in
-                XCTAssertEqual(content.access_token.count, 64)
-                XCTAssertNotEqual(content.access_token, token1)
-                XCTAssertEqual(content.user.email, user2.email)
-            }
             .test()
     }
 }

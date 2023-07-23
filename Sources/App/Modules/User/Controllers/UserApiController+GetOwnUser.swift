@@ -3,7 +3,6 @@ import Vapor
 
 extension UserApiController {
     func detailOwnUserApi(_ req: Request) async throws -> User.Account.Detail {
-        // TODO: why not just call detailOutput?
         guard let authenticatedUser = req.auth.get(AuthenticatedUser.self) else {
             throw Abort(.unauthorized)
         }
