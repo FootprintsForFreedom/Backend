@@ -4,25 +4,9 @@ import XCTVapor
 @testable import App
 
 final class UserApiGetOwnUserTests: AppTestCase, UserTest {
-    private func createNewUserWithToken(
-        name: String = "New Test User",
-        email: String = "test-user\(UUID())@example.com",
-        school: String? = nil,
-        password: String = "password",
-        verified: Bool = false,
-        role: User.Role = .user
-    ) async throws -> (user: UserAccountModel, token: String) {
-        let user = try UserAccountModel(name: name, email: email, school: school, password: app.password.hash(password), verified: verified, role: role)
-        try await user.create(on: app.db)
-
-        let token = try user.generateToken()
-        try await token.create(on: app.db)
-
-        return (user, token.value)
-    }
-
     func testGetOwnUser() async throws {
-        let (user, token) = try await createNewUserWithToken()
+        let user = try await getUser(role: .user)
+        let token = try await getToken(for: user)
 
         try app
             .describe("Get own user should return authenticated user")

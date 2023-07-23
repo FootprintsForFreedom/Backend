@@ -5,11 +5,11 @@ import Vapor
 protocol MailTemplateRepresentable {
     static var staticContentSlug: String { get }
 
-    static func send(for user: UserAccountModel, on req: Request) async throws
+    static func send(for user: UserAccountModel, with verificationToken: String, on req: Request) async throws
 }
 
 extension MailTemplateRepresentable {
-    static func send(for user: UserAccountModel, on req: Request) async throws {
+    static func send(for user: UserAccountModel, with verificationToken: String, on req: Request) async throws {
         let recipient = Email.Contact(name: user.name, emailAddress: user.email)
 
         guard
@@ -23,10 +23,7 @@ extension MailTemplateRepresentable {
             throw Abort(.internalServerError)
         }
 
-        guard let userToken = user.verificationToken?.value else {
-            throw Abort(.internalServerError)
-        }
-        let verificationLink = "\(Environment.appUrl)/api/user/accounts/\(user.id!)/verify?token=\(userToken)"
+        let verificationLink = "\(Environment.appUrl)/api/user/accounts/\(user.id!)/verify?token=\(verificationToken)"
 
         let subject = detail.title
             .replacingOccurrences(of: StaticContent.Snippet.username.rawValue, with: user.name)

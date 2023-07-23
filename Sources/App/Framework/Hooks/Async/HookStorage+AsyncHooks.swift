@@ -3,7 +3,7 @@ extension HookStorage {
     /// - Parameters:
     ///   - name: The name of the hook function.
     ///   - block: The hook function block.
-    func registerAsync<ReturnType>(_ name: String, use block: @escaping AsyncHookFunctionSignature<ReturnType>) {
+    func registerAsync<ReturnType>(_ name: HookName, use block: @escaping AsyncHookFunctionSignature<ReturnType>) {
         let function = AsyncAnyHookFunction { args -> Any in
             try await block(args)
         }
@@ -16,7 +16,7 @@ extension HookStorage {
     ///   - name: The name of the hook function to invoke.
     ///   - args: The hook arguments passed to the hook function.
     /// - Returns: The returned value from the invoked hook function.
-    func invokeAsync<ReturnType>(_ name: String, args: HookArguments = [:]) async throws -> ReturnType? {
+    func invokeAsync<ReturnType>(_ name: HookName, args: HookArguments = [:]) async throws -> ReturnType? {
         try await asyncPointers.first { $0.name == name && $0.returnType == ReturnType.self }?.pointer.invokeAsync(args) as? ReturnType
     }
 
@@ -25,7 +25,7 @@ extension HookStorage {
     ///   - name: The name of the hook function to invoke.
     ///   - args: The hook arguments passed to the hook function.
     /// - Returns: An array of the return values of all hook functions with the given name.
-    func invokeAllAsync<ReturnType>(_ name: String, args: HookArguments = [:]) async throws -> [ReturnType] {
+    func invokeAllAsync<ReturnType>(_ name: HookName, args: HookArguments = [:]) async throws -> [ReturnType] {
         let fns = asyncPointers.filter { $0.name == name && $0.returnType == ReturnType.self }
         var result: [ReturnType] = []
         for fn in fns {

@@ -11,3 +11,4 @@ db.sqlite
 *.profraw
 Public/*
 Resources/GeoIP
+*.key*

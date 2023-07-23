@@ -2,7 +2,7 @@ import AppApi
 import Fluent
 import Vapor
 
-final class UserAccountModel: DatabaseModelInterface {
+final class UserAccountModel: DatabaseModelInterface, Authenticatable {
     typealias Module = UserModule
 
     enum FieldKeys {
@@ -24,7 +24,7 @@ final class UserAccountModel: DatabaseModelInterface {
     @Field(key: FieldKeys.v1.verified) var verified: Bool
     @Enum(key: FieldKeys.v1.role) var role: User.Role
 
-    @OptionalChild(for: \.$user) var verificationToken: UserVerificationTokenModel?
+    @Children(for: \.$user) var tokenFamilies: [UserTokenFamilyModel]
 
     init() { }
 
@@ -62,6 +62,31 @@ extension UserAccountModel {
     }
 
     func publicDetail() throws -> User.Account.Detail {
-        try .publicDetail(id: requireID(), name: name, school: school)
+        try .publicDetail(
+            id: requireID(),
+            name: name,
+            school: school
+        )
+    }
+
+    func ownDetail() throws -> User.Account.Detail {
+        try .ownDetail(
+            id: requireID(),
+            name: name,
+            email: email,
+            school: school,
+            verified: verified,
+            role: role
+        )
+    }
+
+    func adminDetail() throws -> User.Account.Detail {
+        try .adminDetail(
+            id: requireID(),
+            name: name,
+            school: school,
+            verified: verified,
+            role: role
+        )
     }
 }

@@ -2,6 +2,7 @@
 @_exported import CollectionConcurrencyKit
 import Fluent
 import FluentPostgresDriver
+import JWT
 import QueuesRedisDriver
 import SwiftSMTPVapor
 import Vapor
@@ -27,6 +28,16 @@ public func configure(_ app: Application) async throws {
     // Add the default middlewares
     app.middleware.use(RouteLoggingMiddleware(logLevel: .info))
     app.middleware.use(ErrorMiddleware.default(environment: app.environment))
+
+    // setup keys for JWT
+    let privateKey = try String(contentsOfFile: app.directory.resourcesDirectory + Environment.jwtEcdsaKeyPath)
+    let privateSigner = try JWTSigner.es256(key: .private(pem: privateKey.bytes))
+
+    let publicKey = try String(contentsOfFile: app.directory.resourcesDirectory + Environment.jwtEcdsaKeyPath.appending(".pub"))
+    let publicSigner = try JWTSigner.es256(key: .public(pem: publicKey.bytes))
+
+    app.jwt.signers.use(privateSigner, kid: .private)
+    app.jwt.signers.use(publicSigner, kid: .public, isDefault: true)
 
     // uncomment to serve files from /Public folder
     // app.middleware.use(FileMiddleware(publicDirectory: app.directory.publicDirectory))

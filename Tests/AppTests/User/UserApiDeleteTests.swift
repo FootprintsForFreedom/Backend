@@ -68,6 +68,9 @@ final class UserApiDeleteTests: AppTestCase, UserTest {
     func testDeleteUserDeletesTokens() async throws {
         let moderatorToken = try await getToken(for: .admin)
         let user = try await createNewUser()
+        let _ = try await getToken(type: .tokenRefresh, for: user)
+        let initialUserTokenCount = try await UserTokenFamilyModel.query(on: app.db).filter(\.$user.$id, .equal, user.id!).count()
+        XCTAssertGreaterThan(initialUserTokenCount, 0)
 
         try app
             .describe("Deleting a user should delete all tokens belonging to him")
@@ -76,7 +79,8 @@ final class UserApiDeleteTests: AppTestCase, UserTest {
             .expect(.noContent)
             .test()
 
-        let deletedUserTokenCount = try await UserTokenModel.query(on: app.db).filter(\.$user.$id, .equal, user.id!).count()
+        // make sure to force delete token
+        let deletedUserTokenCount = try await UserTokenFamilyModel.query(on: app.db).filter(\.$user.$id, .equal, user.id!).withDeleted().count()
         XCTAssertEqual(deletedUserTokenCount, 0)
     }
 

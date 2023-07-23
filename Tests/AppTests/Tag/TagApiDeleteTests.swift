@@ -65,15 +65,13 @@ final class TagApiDeleteTests: AppTestCase, TagTest {
     }
 
     func testDeleteUnverifiedTagAsCreatorFails() async throws {
-        let user = try await getUser(role: .user)
-        let userToken = try user.generateToken()
-        try await userToken.create(on: app.db)
+        let userToken = try await getToken(for: .user)
         let (tagRepository, _) = try await createNewTag(verified: true)
 
         try app
             .describe("A user should not be able to delete a tag")
             .delete(tagPath.appending(tagRepository.requireID().uuidString))
-            .bearerToken(userToken.value)
+            .bearerToken(userToken)
             .expect(.forbidden)
             .test()
     }

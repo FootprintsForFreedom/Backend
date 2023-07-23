@@ -10,7 +10,7 @@ Deletes a static content object with all details in all languages.
 
 This endpoint is only available to admins.
 
-The admin user token has to be sent as a `BearerToken` with the request.
+The admin access token has to be sent as a `BearerToken` with the request.
 
 ## Response
 

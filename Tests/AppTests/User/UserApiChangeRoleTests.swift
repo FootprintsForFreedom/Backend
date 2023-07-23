@@ -141,8 +141,7 @@ final class UserApiChangeRoleTests: AppTestCase, UserTest {
 
         for userRole in allRoles {
             let user = try await createNewUser(role: userRole)
-            let ownToken = try user.generateToken()
-            try await ownToken.create(on: app.db)
+            let token = try await getToken(for: user)
 
             for newRole in allRoles {
                 let changeRoleContent = User.Account.ChangeRole(newRole: newRole)
@@ -151,7 +150,7 @@ final class UserApiChangeRoleTests: AppTestCase, UserTest {
                     .describe("User should not be able to update his own role")
                     .put(usersPath.appending(user.requireID().uuidString.appending("/changeRole")))
                     .body(changeRoleContent)
-                    .bearerToken(ownToken.value)
+                    .bearerToken(token)
                     .expect(.forbidden)
                     .test()
             }

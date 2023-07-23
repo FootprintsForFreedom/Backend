@@ -29,9 +29,8 @@ extension UserTest {
         role: User.Role = .user
     ) async throws -> (user: UserAccountModel, token: String) {
         let user = try await createNewUser(name: name, email: email, school: school, password: password, verified: verified, role: role)
-        let token = try user.generateToken()
-        try await token.create(on: app.db)
+        let token = try await getToken(for: user)
 
-        return (user, token.value)
+        return (user, token)
     }
 }

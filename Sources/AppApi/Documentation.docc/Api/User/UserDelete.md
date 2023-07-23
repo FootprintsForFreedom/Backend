@@ -8,7 +8,7 @@ Deletes a user.
 
 This endpoint is only available to the user himself and admins.
 
-The own or admin user token has to be sent as a `BearerToken` with the request.
+The own or admin access token has to be sent as a `BearerToken` with the request.
 
 ## Response
 

@@ -6,11 +6,12 @@ Resets the user password when it has been forgotten.
 
     POST /api/v1/users/accounts/<user-id>/resetPassword
 
+The verification token the user received has to be sent as a `BearerToken` with the request.
+
 ### Input parameters
 
 The following parameters have to be sent with the request for it to be successful:
 
-- term **token**: The token for the user to reset his password. 
 - term **newPassword**: The new password set by the user for his account.
 
 The parameters can be either sent as `application/json` or `multipart/form-data`.
@@ -30,17 +31,8 @@ The parameters can be either sent as `application/json` or `multipart/form-data`
 {
     "id": "<user-id>",
     "name": "<user-name>",
-    "email": "<user-email>",
     "school": "<user-school>",
-    "verified": <user-verified>,
-    "role": "<user-role>"
 }
-```
-
-If the request is performed by the user himself, his email address will also be returned:
-
-```json
-"email": "<user-email>"
 ```
 
 ## See Also

@@ -45,32 +45,14 @@ struct UserApiController: ApiController {
     // MARK: - Detail
 
     func detailOutput(_ req: Request, _ model: UserAccountModel) async throws -> User.Account.Detail {
-        if let authenticatedUser = req.auth.get(AuthenticatedUser.self), let user = try await DatabaseModel.find(authenticatedUser.id, on: req.db) {
+        if let user = req.auth.get(AuthenticatedUser.self) {
             if user.id == model.id || user.role >= .superAdmin {
-                return User.Account.Detail.ownDetail(
-                    id: model.id!,
-                    name: model.name,
-                    email: model.email,
-                    school: model.school,
-                    verified: model.verified,
-                    role: model.role
-                )
+                return try model.ownDetail()
             } else if user.role >= .admin {
-                return User.Account.Detail.adminDetail(
-                    id: model.id!,
-                    name: model.name,
-                    school: model.school,
-                    verified: model.verified,
-                    role: model.role
-                )
+                return try model.adminDetail()
             }
         }
-
-        return User.Account.Detail.publicDetail(
-            id: model.id!,
-            name: model.name,
-            school: model.school
-        )
+        return try model.publicDetail()
     }
 
     // MARK: - Create
@@ -85,20 +67,12 @@ struct UserApiController: ApiController {
     }
 
     func createResponse(_ req: Request, _ model: UserAccountModel) async throws -> Response {
-        try await User.Account.Detail.ownDetail(
-            id: model.id!,
-            name: model.name,
-            email: model.email,
-            school: model.school,
-            verified: model.verified,
-            role: model.role
-        ).encodeResponse(status: .created, for: req)
+        try await model.ownDetail().encodeResponse(status: .created, for: req)
     }
 
     func afterCreate(_ req: Request, _ model: UserAccountModel) async throws {
-        try await model.createNewVerificationToken(req)
-        try await model.$verificationToken.load(on: req.db)
-        try await UserCreateAccountTemplate.send(for: model, on: req)
+        let signedVerificationToken = try await model.createSignedVerificationToken(on: req)
+        try await UserCreateAccountTemplate.send(for: model, with: signedVerificationToken, on: req)
     }
 
     // MARK: - Update
@@ -115,9 +89,8 @@ struct UserApiController: ApiController {
         model.school = input.school
         if previousEmail != model.email {
             model.verified = false
-            try await model.createNewVerificationToken(req)
-            try await model.$verificationToken.load(on: req.db)
-            try await UserUpdateEmailAccountTemplate.send(for: model, on: req)
+            let signedVerificationToken = try await model.createSignedVerificationToken(on: req)
+            try await UserUpdateEmailAccountTemplate.send(for: model, with: signedVerificationToken, on: req)
         }
     }
 
@@ -136,9 +109,8 @@ struct UserApiController: ApiController {
         }
         if previousEmail != model.email {
             model.verified = false
-            try await model.createNewVerificationToken(req)
-            try await model.$verificationToken.load(on: req.db)
-            try await UserUpdateEmailAccountTemplate.send(for: model, on: req)
+            let signedVerificationToken = try await model.createSignedVerificationToken(on: req)
+            try await UserUpdateEmailAccountTemplate.send(for: model, with: signedVerificationToken, on: req)
         }
     }
 

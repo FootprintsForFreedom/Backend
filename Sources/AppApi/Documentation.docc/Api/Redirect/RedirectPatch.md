@@ -8,7 +8,7 @@ Patches an existing redirect from the given input.
 
 This endpoint is only available to admins.
 
-The admin user token has to be sent as a `BearerToken` with the request.
+The admin access token has to be sent as a `BearerToken` with the request.
 
 > Important: Changes to redirects don't need to be verified, they take effect immediately.
 

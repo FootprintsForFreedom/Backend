@@ -1,25 +1,22 @@
+import AppApi
 import Fluent
 import Vapor
 
-struct UserCredentialsAuthenticator: AsyncCredentialsAuthenticator {
-    struct Credentials: Content {
-        let email: String
-        let password: String
-    }
+extension User.Account.Login: Content { }
 
-    func authenticate(credentials: Credentials, for req: Request) async throws {
-        guard
-            let user = try await UserAccountModel
+struct UserCredentialsAuthenticator: AsyncCredentialsAuthenticator {
+    func authenticate(credentials: User.Account.Login, for req: Request) async throws {
+        guard let user = try await UserAccountModel
             .query(on: req.db)
             .filter(\.$email == credentials.email)
             .first()
         else {
-            return
+            throw Abort(.unauthorized)
         }
 
         guard try req.application.password.verify(credentials.password, created: user.password) else {
-            return
+            throw Abort(.unauthorized)
         }
-        req.auth.login(AuthenticatedUser(id: user.id!, email: user.email))
+        req.auth.login(user)
     }
 }

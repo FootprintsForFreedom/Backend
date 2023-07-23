@@ -8,7 +8,7 @@ Creates a tag object from the given input for the specified waypoint.
 
 This endpoint is only available to verified users.
 
-The user token has to be sent as a `BearerToken` with the request.
+The access token has to be sent as a `BearerToken` with the request.
 
 ### Input parameters
 

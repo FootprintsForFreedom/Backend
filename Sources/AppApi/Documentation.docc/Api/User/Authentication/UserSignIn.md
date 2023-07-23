@@ -1,6 +1,6 @@
 # Sign in
 
-Signs a user in and returns a token.
+Signs a user in and returns an access and refresh token pair.
 
 ## Request
 
@@ -23,6 +23,7 @@ The parameters can be either sent as `application/json`, `multipart/form-data` o
 {
     "id": "<token-id>",
     "access_token": "<access-token>",
+    "refresh_token": "<refresh-token>",
     "user": {
         "id": "<user-id>",
         "name": "<user-name>",
@@ -35,6 +36,10 @@ The parameters can be either sent as `application/json`, `multipart/form-data` o
 ```
 
 > Note: The user object is the same as the one returned when getting the own user: <doc:UserDetailSelf>.
+
+The access token returned can be used for accessing content and will be valid for 15 minutes. To request a new access token the refresh token is used. For details see <doc:UserTokenRefresh>. 
+
+The sign in creates a new token family.
 
 ## See Also
 

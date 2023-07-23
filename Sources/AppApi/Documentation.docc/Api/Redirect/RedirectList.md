@@ -8,7 +8,7 @@ Lists all redirects in pages.
 
 This endpoint is only available to admins.
 
-The admin user token has to be sent as a `BearerToken` with the request.
+The admin access token has to be sent as a `BearerToken` with the request.
 
 ### Optional query parameters
 

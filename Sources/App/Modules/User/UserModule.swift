@@ -7,9 +7,7 @@ struct UserModule: ModuleInterface {
         app.migrations.add(UserMigrations.v1())
         app.migrations.add(UserMigrations.seed())
 
-        app.middleware.use(UserTokenAuthenticator())
-
-        app.hooks.register("api-routes-v1", use: router.apiRoutesHook)
+        app.hooks.register(.apiRoutesV1, use: router.apiRoutesHook)
 
         try router.boot(routes: app.routes)
     }

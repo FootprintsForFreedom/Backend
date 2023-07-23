@@ -28,6 +28,7 @@ let package = Package(
         .package(url: "https://github.com/SwiftPackageRepository/ISO639.swift.git", branch: "master"),
         .package(url: "https://github.com/niklhut/swift-mmdb.git", branch: "city"),
         .package(url: "https://github.com/nicklockwood/SwiftFormat", from: "0.50.4"),
+        .package(url: "https://github.com/vapor/jwt.git", from: "4.0.0"),
     ],
     targets: [
         .target(
@@ -59,6 +60,7 @@ let package = Package(
                 .product(name: "ISO639", package: "ISO639.swift"),
                 .product(name: "MMDB", package: "swift-mmdb"),
                 .target(name: "AppApi"),
+                .product(name: "JWT", package: "jwt"),
             ],
             swiftSettings: [
                 // Enable better optimizations when building in Release configuration. Despite the use of
