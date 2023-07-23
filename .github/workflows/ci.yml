@@ -86,7 +86,7 @@ jobs:
     steps:
       - name: Lowercase build target
         id: toLowerCase
-        run: INPUT=${{ env.BUILD_TARGET }} echo "::set-output name=lowercase_build_target::${INPUT,,}"
+        run: INPUT=${{ env.BUILD_TARGET }} echo "lowercase_build_target=${INPUT,,}" >> $GITHUB_OUTPUT
 
       - name: Checkout repository
         uses: actions/checkout@v3
