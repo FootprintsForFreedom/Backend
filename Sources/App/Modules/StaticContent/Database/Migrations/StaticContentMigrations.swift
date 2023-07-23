@@ -59,10 +59,12 @@ enum StaticContentMigrations {
     }
 
     struct seed: AsyncMigration {
-        static let createAccountSlug = "create-account-mail"
-        static let passwordResetSlug = "password-reset-mail"
-        static let updateEmailSlug = "update-email-mail"
-        static let verifyAccountSlug = "verify-account-mail"
+        enum Slugs: String, CaseIterable {
+            case createAccountSlug = "create-account-mail"
+            case passwordResetSlug = "password-reset-mail"
+            case updateEmailSlug = "update-email-mail"
+            case verifyAccountSlug = "verify-account-mail"
+        }
 
         func prepare(on db: Database) async throws {
             // get the admin user
@@ -74,7 +76,7 @@ enum StaticContentMigrations {
             }
 
             // create account mail
-            let createAccountMailRepository = StaticContentRepositoryModel(slug: Self.createAccountSlug, requiredSnippets: [.username, .appName, .verificationLink])
+            let createAccountMailRepository = StaticContentRepositoryModel(slug: Slugs.createAccountSlug.rawValue, requiredSnippets: [.username, .appName, .verificationLink])
             try await createAccountMailRepository.create(on: db)
             let createAccountMailDetail = try StaticContentDetailModel(
                 moderationTitle: "Neuer Account Email",
@@ -102,7 +104,7 @@ enum StaticContentMigrations {
             try await createAccountMailDetail.create(on: db)
 
             // password reset mail
-            let passwordResetMailRepository = StaticContentRepositoryModel(slug: Self.passwordResetSlug, requiredSnippets: [.username, .appName, .verificationLink])
+            let passwordResetMailRepository = StaticContentRepositoryModel(slug: Slugs.passwordResetSlug.rawValue, requiredSnippets: [.username, .appName, .verificationLink])
             try await passwordResetMailRepository.create(on: db)
             let passwordResetMailDetail = try StaticContentDetailModel(
                 moderationTitle: "Passwort Zurücksetzen Email",
@@ -126,7 +128,7 @@ enum StaticContentMigrations {
             try await passwordResetMailDetail.create(on: db)
 
             // update email mail
-            let updateEmailMailRepository = StaticContentRepositoryModel(slug: Self.updateEmailSlug, requiredSnippets: [.username, .appName, .verificationLink])
+            let updateEmailMailRepository = StaticContentRepositoryModel(slug: Slugs.updateEmailSlug.rawValue, requiredSnippets: [.username, .appName, .verificationLink])
             try await updateEmailMailRepository.create(on: db)
             let updateEmailMailDetail = try StaticContentDetailModel(
                 moderationTitle: "Neue E-Mail-Adresse Email",
@@ -152,7 +154,7 @@ enum StaticContentMigrations {
             try await updateEmailMailDetail.create(on: db)
 
             // verify account mail
-            let verifyAccountMailRepository = StaticContentRepositoryModel(slug: Self.verifyAccountSlug, requiredSnippets: [.username, .appName, .verificationLink])
+            let verifyAccountMailRepository = StaticContentRepositoryModel(slug: Slugs.verifyAccountSlug.rawValue, requiredSnippets: [.username, .appName, .verificationLink])
             try await verifyAccountMailRepository.create(on: db)
             let verifyAccountMailDetail = try StaticContentDetailModel(
                 moderationTitle: "Verifiziere Account Email",

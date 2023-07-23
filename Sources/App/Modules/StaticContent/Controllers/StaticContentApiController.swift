@@ -264,5 +264,12 @@ struct StaticContentApiController: ApiRepositoryController {
 
     func beforeDelete(_ req: Request, _ repository: StaticContentRepositoryModel) async throws {
         try await req.onlyFor(.admin)
+
+        guard !StaticContentMigrations.seed.Slugs.allCases
+            .map(\.rawValue)
+            .contains(repository.slug)
+        else {
+            throw Abort(.forbidden)
+        }
     }
 }
