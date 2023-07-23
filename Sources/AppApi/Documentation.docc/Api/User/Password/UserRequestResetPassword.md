@@ -18,7 +18,7 @@ The parameters can be either sent as `application/json` or `multipart/form-data`
 
 If the request reset password was successful a HTTP Status code `200 - OK` will be returned.
 
-The user will also receive an email containing a link with a token to reset his password. The token embedded in the link will only be valid for 24 hours.
+The user will also receive an email containing a link with a token to reset his password. The token embedded in the link will only be valid for 10 minutes.
 
 ## See Also
 

@@ -26,6 +26,7 @@ The user api endpoints.
 ### Authentication
 
 - <doc:UserSignIn>
+- <doc:UserTokenRefresh>
 - <doc:UserSignOut>
 
 ### Change password
