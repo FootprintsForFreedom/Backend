@@ -8,7 +8,7 @@ PUT /api/v1/tags/<tag-repository-id>
 
 This endpoint is only available to verified users.
 
-The user token has to be sent as a `BearerToken` with the request.
+The access token has to be sent as a `BearerToken` with the request.
 
 ### Input parameters
 

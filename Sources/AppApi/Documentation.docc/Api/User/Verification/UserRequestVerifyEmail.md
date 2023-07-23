@@ -8,7 +8,7 @@ Requests a verification token for the user's email address.
 
 This endpoint is only available to the user himself and the email cannot yet be verified.
 
-The own user token has to be sent as a `BearerToken` with the request.
+The own access token has to be sent as a `BearerToken` with the request.
 
 ## Response
 

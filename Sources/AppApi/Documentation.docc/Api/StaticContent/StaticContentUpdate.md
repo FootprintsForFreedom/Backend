@@ -8,7 +8,7 @@ Updates an existing static content object from the given input.
 
 This endpoint is only available to admins.
 
-The admin user token has to be sent as a `BearerToken` with the request.
+The admin access token has to be sent as a `BearerToken` with the request.
 
 > Important: Changes to static content don't need to be verified, they take effect immediately.
 

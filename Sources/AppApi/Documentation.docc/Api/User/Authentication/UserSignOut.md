@@ -10,7 +10,7 @@ Signs a user out and deletes all tokens for this user.
 
 This endpoint is only available to users.
 
-The user token has to be sent as a `BearerToken` with the request.
+The access token has to be sent as a `BearerToken` with the request.
 
 ## Response
 
