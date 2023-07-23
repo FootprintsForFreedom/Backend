@@ -78,6 +78,11 @@ jobs:
           mkdir Resources
           mv GeoLite2-City/GeoLite2-City.mmdb ./Resources/GeoLite2-City.mmdb
 
+      - name: Create Key
+        run: |
+          openssl ecparam -name prime256v1 -genkey -noout -out jwtES256.key
+          openssl ec -in jwtES256.key -pubout -out jwtES256.key.pub
+
       - name: Cache Swift Packages
         uses: actions/cache@v3
         with:
@@ -105,6 +110,7 @@ jobs:
           SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
           SEND_MAILS: false
           MMDB_PATH: GeoLite2-City.mmdb
+          JWT_ECDSA_KEY_PATH: jwtES256.key
           SOFT_DELETED_LIFETIME: 30
           DEFAULT_LOCATION_LATITUDE: 49.872222
           DEFAULT_LOCATION_LONGITUDE: 8.652778
