@@ -108,4 +108,27 @@ final class StaticContentApiDeleteTests: AppTestCase, StaticContentTest {
             .expect(.notFound)
             .test()
     }
+
+    func testDeleteCriticalStaticContentFails() async throws {
+        let adminToken = try await getToken(for: .admin)
+
+        for slug in StaticContentMigrations.seed.Slugs.allCases {
+            guard let staticContentRepository = try await StaticContentRepositoryModel
+                .query(on: app.db)
+                .filter(\.$slug == slug.rawValue)
+                .first()
+            else {
+                XCTFail("static content not found")
+                return
+            }
+
+            try app
+                .describe("Delete critical staticContent fails")
+                .delete(staticContentPath.appending(staticContentRepository.requireID().uuidString))
+                .bearerToken(adminToken)
+                .expect(.forbidden)
+                .test()
+
+        }
+    }
 }
