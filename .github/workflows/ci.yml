@@ -81,12 +81,14 @@ jobs:
     # Deploy to the github-pages environment
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}/documentation/${{ steps.toLowerCase.lowercase_build_target }}
+      url: ${{ steps.deployment.outputs.page_url }}/documentation${{ steps.toLowerCase.outputs.lowercase_build_target }}
 
     steps:
       - name: Lowercase build target
         id: toLowerCase
-        run: INPUT=${{ env.BUILD_TARGET }} echo "lowercase_build_target=${INPUT,,}" >> $GITHUB_OUTPUT
+        run: |
+          INPUT=${{ env.BUILD_TARGET }} 
+          echo "lowercase_build_target=${INPUT,,}" >> $GITHUB_OUTPUT
 
       - name: Checkout repository
         uses: actions/checkout@v3
