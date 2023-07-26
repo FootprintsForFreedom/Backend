@@ -280,7 +280,6 @@ struct WaypointApiController: ApiElasticDetailController, ApiElasticPagedListCon
             throw Abort(.badRequest, reason: "Media to patch needs to be in same repository")
         }
 
-
         guard input.title != nil || input.detailText != nil || input.location != nil else {
             throw Abort(.badRequest)
         }

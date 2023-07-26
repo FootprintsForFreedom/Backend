@@ -171,7 +171,6 @@ struct TagApiController: ApiElasticDetailController, ApiElasticPagedListControll
             throw Abort(.badRequest, reason: "Tag to patch needs to be in same repository")
         }
 
-
         guard input.title != nil || input.keywords != nil else {
             throw Abort(.badRequest)
         }
