@@ -290,6 +290,9 @@ struct MediaApiController: ApiElasticDetailController, ApiElasticPagedListContro
         guard let mediaToPatch = try await MediaDetailModel.find(input.idForMediaDetailToPatch, on: req.db) else {
             throw Abort(.badRequest, reason: "No media with the given id could be found")
         }
+        guard try mediaToPatch.$repository.id == repository.requireID() else {
+            throw Abort(.badRequest, reason: "Media to patch needs to be in same repository")
+        }
 
         let mediaFileType = req.headers.contentType?.mediaFileType()
 
