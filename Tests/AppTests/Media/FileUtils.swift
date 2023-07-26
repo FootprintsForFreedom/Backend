@@ -17,7 +17,8 @@ struct FileUtils {
         .init(mimeType: "application/pdf", filename: "SamplePdf", fileExtension: "pdf"),
     ]
 
-    static let testImage = testFiles.first!
+    static let testImage = testFiles.first { $0.mimeType == "image/png" }!
+    static let testDocument = testFiles.first { $0.mimeType == "application/pdf" }!
 
     static func testFile(excludedFileTypes: [Media.Detail.FileType]) -> TestFile? {
         let excludedMimeTypes = excludedFileTypes.flatMap(\.allowedMimeTypes)

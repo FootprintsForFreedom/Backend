@@ -224,6 +224,21 @@ final class MediaApiPatchTests: AppTestCase, MediaTest {
             .test()
     }
 
+    func testPatchMediaWithMediaToPatchIdFromOtherRepositoryFails() async throws {
+        let token = try await getToken(for: .user, verified: true)
+        let (repository, _, _) = try await createNewMedia(fileType: .document, verified: true)
+        let (_, _, _, updateContent) = try await getMediaPatchContent(patchedTitle: UUID().uuidString, verified: true)
+
+        let query = try URLEncodedFormEncoder().encode(updateContent)
+
+        try app
+            .describe("Patch media with empty payload should fail")
+            .patch(mediaPath.appending("\(repository.requireID().uuidString)/?\(query)"))
+            .bearerToken(token)
+            .expect(.badRequest)
+            .test()
+    }
+
     func testPatchMediaNeedsValidTitle() async throws {
         let token = try await getToken(for: .user, verified: true)
         let (repository, _, _, patchContent) = try await getMediaPatchContent(patchedTitle: "", verified: true)
@@ -309,6 +324,23 @@ final class MediaApiPatchTests: AppTestCase, MediaTest {
             .patch(mediaPath.appending("\(repository.requireID().uuidString)/?\(query)"))
             .buffer(FileUtils.data(for: file))
             .header("Content-Type", "hallo/test")
+            .bearerToken(token)
+            .expect(.badRequest)
+            .test()
+    }
+
+    func testUpdateMediaNeedsFileWithRequiredMediaType() async throws {
+        let token = try await getToken(for: .user, verified: true)
+        let (repository, _, _, updateContent) = try await getMediaPatchContent(verified: true)
+
+        let query = try URLEncodedFormEncoder().encode(updateContent)
+        let file = FileUtils.testDocument
+
+        try app
+            .describe("Update media should need media content type or fail")
+            .put(mediaPath.appending("\(repository.requireID().uuidString)/?\(query)"))
+            .buffer(FileUtils.data(for: file))
+            .header("Content-Type", file.mimeType)
             .bearerToken(token)
             .expect(.badRequest)
             .test()

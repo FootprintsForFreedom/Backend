@@ -16,6 +16,7 @@ final class MediaApiUpdateTests: AppTestCase, MediaTest {
         languageId: UUID? = nil,
         updateLanguageCode: String? = nil,
         waypointId: UUID? = nil,
+        fileType: Media.Detail.FileType = .image,
         setMediaIdForFile: Bool = true,
         verified: Bool = false
     ) async throws -> (mediaRepository: MediaRepositoryModel, createdMediaDetail: MediaDetailModel, createdMediaFile: MediaFileModel, updateContent: Media.Detail.Update) {
@@ -23,6 +24,7 @@ final class MediaApiUpdateTests: AppTestCase, MediaTest {
             title: title,
             detailText: detailText,
             source: source,
+            fileType: fileType,
             verified: verified,
             waypointId: waypointId,
             languageId: languageId
@@ -261,6 +263,21 @@ final class MediaApiUpdateTests: AppTestCase, MediaTest {
             .test()
     }
 
+    func testUpdateMediaNeedsMediaIdForFileWithSameMediaType() async throws {
+        let token = try await getToken(for: .user, verified: true)
+        let (repository, _, _) = try await createNewMedia(fileType: .audio)
+        let (_, _, _, updateContent) = try await getMediaUpdateContent(fileType: .image, verified: true)
+
+        let query = try URLEncodedFormEncoder().encode(updateContent)
+
+        try app
+            .describe("Update media should return ok")
+            .put(mediaPath.appending("\(repository.requireID().uuidString)/?\(query)"))
+            .bearerToken(token)
+            .expect(.badRequest)
+            .test()
+    }
+
     func testUpdateMediaNeedsValidContentType() async throws {
         let token = try await getToken(for: .user, verified: true)
         let (repository, _, _, updateContent) = try await getMediaUpdateContent(setMediaIdForFile: false, verified: true)
@@ -275,6 +292,23 @@ final class MediaApiUpdateTests: AppTestCase, MediaTest {
             .header("Content-Type", "hallo/test")
             .bearerToken(token)
             .expect(.unsupportedMediaType)
+            .test()
+    }
+
+    func testUpdateMediaNeedsFileWithRequiredMediaType() async throws {
+        let token = try await getToken(for: .user, verified: true)
+        let (repository, _, _, updateContent) = try await getMediaUpdateContent(setMediaIdForFile: false, verified: true)
+
+        let query = try URLEncodedFormEncoder().encode(updateContent)
+        let file = FileUtils.testDocument
+
+        try app
+            .describe("Update media should need media content type or fail")
+            .put(mediaPath.appending("\(repository.requireID().uuidString)/?\(query)"))
+            .buffer(FileUtils.data(for: file))
+            .header("Content-Type", file.mimeType)
+            .bearerToken(token)
+            .expect(.badRequest)
             .test()
     }
 
