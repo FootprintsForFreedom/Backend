@@ -112,6 +112,20 @@ final class TagApiPatchTests: AppTestCase, TagTest {
             .test()
     }
 
+    func testPatchTagWithIdFromOtherRepositoryFails() async throws {
+        let token = try await getToken(for: .user, verified: true)
+        let (repository, _) = try await createNewTag()
+        let (_, _, patchContent) = try await getTagPatchContent(patchedTitle: UUID().uuidString, verifiedAt: Date())
+
+        try app
+            .describe("Patch tag with id from other repository should fail")
+            .patch(tagPath.appending(repository.requireID().uuidString))
+            .body(patchContent)
+            .bearerToken(token)
+            .expect(.badRequest)
+            .test()
+    }
+
     func testPatchTagNeedsValidTitle() async throws {
         let token = try await getToken(for: .user, verified: true)
         let (repository, _, patchContent) = try await getTagPatchContent(patchedTitle: "", verifiedAt: Date())

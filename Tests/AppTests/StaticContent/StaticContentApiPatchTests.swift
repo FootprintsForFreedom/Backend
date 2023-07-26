@@ -168,6 +168,20 @@ final class StaticContentApiPatchTests: AppTestCase, StaticContentTest {
             .test()
     }
 
+    func testPatchStaticContentWithIdFromOtherRepositoryFails() async throws {
+        let adminToken = try await getToken(for: .admin, verified: true)
+        let (repository, _) = try await createNewStaticContent()
+        let (_, _, patchContent) = try await getStaticContentPatchContent(patchedTitle: UUID().uuidString)
+
+        try app
+            .describe("Patch staticContent with static content id from other repository should fail")
+            .patch(staticContentPath.appending(repository.requireID().uuidString))
+            .body(patchContent)
+            .bearerToken(adminToken)
+            .expect(.badRequest)
+            .test()
+    }
+
     func testPatchStaticContentNeedsValidTitle() async throws {
         let adminToken = try await getToken(for: .admin, verified: true)
         let (repository, _, patchContent) = try await getStaticContentPatchContent(patchedTitle: "")

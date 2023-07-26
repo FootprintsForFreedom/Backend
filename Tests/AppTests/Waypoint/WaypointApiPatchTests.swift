@@ -194,6 +194,20 @@ final class WaypointApiPatchTests: AppTestCase, WaypointTest {
             .test()
     }
 
+    func testPatchWaypointWithIdFromOtherRepositoryFails() async throws {
+        let token = try await getToken(for: .user, verified: true)
+        let (repository, _ , _) = try await createNewWaypoint()
+        let (_, _, _, patchContent) = try await getWaypointPatchContent(patchedTitle: UUID().uuidString)
+
+        try app
+            .describe("Patch waypoint with id from other repository should fail")
+            .patch(waypointsPath.appending(repository.requireID().uuidString))
+            .body(patchContent)
+            .bearerToken(token)
+            .expect(.badRequest)
+            .test()
+    }
+
     func testPatchWaypointNeedsValidTitle() async throws {
         let token = try await getToken(for: .user, verified: true)
         let (waypointRepository, _, _, patchContent) = try await getWaypointPatchContent(patchedTitle: "")
