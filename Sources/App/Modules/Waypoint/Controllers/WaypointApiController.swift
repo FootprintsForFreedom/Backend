@@ -276,6 +276,10 @@ struct WaypointApiController: ApiElasticDetailController, ApiElasticPagedListCon
         guard let waypointToPatch = try await WaypointDetailModel.find(input.idForWaypointDetailToPatch, on: req.db) else {
             throw Abort(.badRequest, reason: "No waypoint with the given id could be found")
         }
+        guard try waypointToPatch.$repository.id == repository.requireID() else {
+            throw Abort(.badRequest, reason: "Media to patch needs to be in same repository")
+        }
+
 
         guard input.title != nil || input.detailText != nil || input.location != nil else {
             throw Abort(.badRequest)
