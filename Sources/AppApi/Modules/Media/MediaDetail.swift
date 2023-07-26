@@ -130,6 +130,9 @@ public extension Media.Detail {
         /// The language code for the media title, description and source.
         public let languageCode: String
         /// The id of an existing media. The updated media will have the same file as this media.
+        ///
+        /// If not set a media file needs to be sent with the request.
+        /// If both are set, the media id takes precedence.
         public let mediaIdForFile: UUID?
 
         /// Creates a media update object.
