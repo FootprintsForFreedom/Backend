@@ -232,7 +232,7 @@ final class MediaApiPatchTests: AppTestCase, MediaTest {
         let query = try URLEncodedFormEncoder().encode(updateContent)
 
         try app
-            .describe("Patch media with empty payload should fail")
+            .describe("Patch media with media id from other repository should fail")
             .patch(mediaPath.appending("\(repository.requireID().uuidString)/?\(query)"))
             .bearerToken(token)
             .expect(.badRequest)
