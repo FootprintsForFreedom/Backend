@@ -224,7 +224,7 @@ final class MediaApiPatchTests: AppTestCase, MediaTest {
             .test()
     }
 
-    func testPatchMediaWithMediaToPatchIdFromOtherRepositoryFails() async throws {
+    func testPatchMediaWithIdFromOtherRepositoryFails() async throws {
         let token = try await getToken(for: .user, verified: true)
         let (repository, _, _) = try await createNewMedia(fileType: .document, verified: true)
         let (_, _, _, updateContent) = try await getMediaPatchContent(patchedTitle: UUID().uuidString, verified: true)
