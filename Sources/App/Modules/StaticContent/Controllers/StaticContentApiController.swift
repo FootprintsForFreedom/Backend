@@ -240,6 +240,9 @@ struct StaticContentApiController: ApiRepositoryController {
         guard let staticContentToPatch = try await StaticContentDetailModel.find(input.idForStaticContentDetailToPatch, on: req.db) else {
             throw Abort(.badRequest, reason: "No static content with the given id could be found")
         }
+        guard try staticContentToPatch.$repository.id == repository.requireID() else {
+            throw Abort(.badRequest, reason: "Static content to patch needs to be in same repository")
+        }
 
         guard input.title != nil || input.text != nil || input.moderationTitle != nil else {
             throw Abort(.badRequest)

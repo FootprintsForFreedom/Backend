@@ -224,15 +224,15 @@ final class MediaApiPatchTests: AppTestCase, MediaTest {
             .test()
     }
 
-    func testPatchMediaWithMediaToPatchIdFromOtherRepositoryFails() async throws {
+    func testPatchMediaWithIdFromOtherRepositoryFails() async throws {
         let token = try await getToken(for: .user, verified: true)
         let (repository, _, _) = try await createNewMedia(fileType: .document, verified: true)
-        let (_, _, _, updateContent) = try await getMediaPatchContent(patchedTitle: UUID().uuidString, verified: true)
+        let (_, _, _, patchContent) = try await getMediaPatchContent(patchedTitle: UUID().uuidString, verified: true)
 
-        let query = try URLEncodedFormEncoder().encode(updateContent)
+        let query = try URLEncodedFormEncoder().encode(patchContent)
 
         try app
-            .describe("Patch media with empty payload should fail")
+            .describe("Patch media with media id from other repository should fail")
             .patch(mediaPath.appending("\(repository.requireID().uuidString)/?\(query)"))
             .bearerToken(token)
             .expect(.badRequest)

@@ -167,6 +167,9 @@ struct TagApiController: ApiElasticDetailController, ApiElasticPagedListControll
         guard let tagToPatch = try await TagDetailModel.find(input.idForTagDetailToPatch, on: req.db) else {
             throw Abort(.badRequest, reason: "No tag with the given id could be found")
         }
+        guard try tagToPatch.$repository.id == repository.requireID() else {
+            throw Abort(.badRequest, reason: "Tag to patch needs to be in same repository")
+        }
 
         guard input.title != nil || input.keywords != nil else {
             throw Abort(.badRequest)
