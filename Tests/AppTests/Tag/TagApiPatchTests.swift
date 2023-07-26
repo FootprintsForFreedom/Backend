@@ -11,13 +11,13 @@ final class TagApiPatchTests: AppTestCase, TagTest {
         patchedTitle: String? = nil,
         keywords: [String] = (1 ... 5).map { _ in String(Int.random(in: 10 ... 100)) }, // array with 5 random numbers between 10 and 100
         patchedKeywords: [String]? = nil,
-        verifiedAt: Date? = nil,
+        verified: Bool = false,
         languageId: UUID? = nil
     ) async throws -> (repository: TagRepositoryModel, detail: TagDetailModel, patchContent: Tag.Detail.Patch) {
         let (repository, detail) = try await createNewTag(
             title: title,
             keywords: keywords,
-            verified: true,
+            verified: verified,
             languageId: languageId
         )
 
@@ -31,7 +31,7 @@ final class TagApiPatchTests: AppTestCase, TagTest {
 
     func testSuccessfulPatchTagTitle() async throws {
         let token = try await getToken(for: .user, verified: true)
-        let (repository, detail, patchContent) = try await getTagPatchContent(patchedTitle: "The patched title", verifiedAt: Date())
+        let (repository, detail, patchContent) = try await getTagPatchContent(patchedTitle: "The patched title", verified: true)
         try await detail.$language.load(on: app.db)
 
         try app
@@ -55,7 +55,7 @@ final class TagApiPatchTests: AppTestCase, TagTest {
     func testSuccessfulPatchTagTitleWithDuplicateTitle() async throws {
         let token = try await getToken(for: .user, verified: true)
         let title = "My new title \(UUID())"
-        let (repository, detail, patchContent) = try await getTagPatchContent(title: title, patchedTitle: title, verifiedAt: Date())
+        let (repository, detail, patchContent) = try await getTagPatchContent(title: title, patchedTitle: title, verified: true)
         try await detail.$language.load(on: app.db)
 
         try app
@@ -78,7 +78,7 @@ final class TagApiPatchTests: AppTestCase, TagTest {
 
     func testSuccessfulPatchTagKeywords() async throws {
         let token = try await getToken(for: .user, verified: true)
-        let (repository, detail, patchContent) = try await getTagPatchContent(patchedKeywords: (1 ... 5).map { _ in String(Int.random(in: 10 ... 100)) }, verifiedAt: Date())
+        let (repository, detail, patchContent) = try await getTagPatchContent(patchedKeywords: (1 ... 5).map { _ in String(Int.random(in: 10 ... 100)) }, verified: true)
         try await detail.$language.load(on: app.db)
 
         try app
@@ -101,7 +101,7 @@ final class TagApiPatchTests: AppTestCase, TagTest {
 
     func testEmptyPatchTagFails() async throws {
         let token = try await getToken(for: .user, verified: true)
-        let (repository, _, patchContent) = try await getTagPatchContent(verifiedAt: Date())
+        let (repository, _, patchContent) = try await getTagPatchContent(verified: true)
 
         try app
             .describe("Patch tag with empty body should fail")
@@ -115,7 +115,7 @@ final class TagApiPatchTests: AppTestCase, TagTest {
     func testPatchTagWithIdFromOtherRepositoryFails() async throws {
         let token = try await getToken(for: .user, verified: true)
         let (repository, _) = try await createNewTag()
-        let (_, _, patchContent) = try await getTagPatchContent(patchedTitle: UUID().uuidString, verifiedAt: Date())
+        let (_, _, patchContent) = try await getTagPatchContent(patchedTitle: UUID().uuidString, verified: true)
 
         try app
             .describe("Patch tag with id from other repository should fail")
@@ -128,7 +128,7 @@ final class TagApiPatchTests: AppTestCase, TagTest {
 
     func testPatchTagNeedsValidTitle() async throws {
         let token = try await getToken(for: .user, verified: true)
-        let (repository, _, patchContent) = try await getTagPatchContent(patchedTitle: "", verifiedAt: Date())
+        let (repository, _, patchContent) = try await getTagPatchContent(patchedTitle: "", verified: true)
 
         try app
             .describe("Patch tag title should require valid title")
@@ -141,7 +141,7 @@ final class TagApiPatchTests: AppTestCase, TagTest {
 
     func testPatchTagNeedsValidKeywords() async throws {
         let token = try await getToken(for: .user, verified: true)
-        let (repository, _, patchContent) = try await getTagPatchContent(patchedKeywords: [String](), verifiedAt: Date())
+        let (repository, _, patchContent) = try await getTagPatchContent(patchedKeywords: [String](), verified: true)
 
         try app
             .describe("Patch tag title should require valid keywords")
@@ -151,7 +151,7 @@ final class TagApiPatchTests: AppTestCase, TagTest {
             .expect(.badRequest)
             .test()
 
-        let (repository2, _, patchContent2) = try await getTagPatchContent(patchedKeywords: [""], verifiedAt: Date())
+        let (repository2, _, patchContent2) = try await getTagPatchContent(patchedKeywords: [""], verified: true)
 
         try app
             .describe("Patch tag title should require valid keywords")
@@ -164,7 +164,7 @@ final class TagApiPatchTests: AppTestCase, TagTest {
 
     func testPatchTagIgnoresEmptyKeywords() async throws {
         let token = try await getToken(for: .user, verified: true)
-        let (repository, detail, patchContent) = try await getTagPatchContent(patchedKeywords: ["hallo", "test", "", "\n", "was ist das", " "], verifiedAt: Date())
+        let (repository, detail, patchContent) = try await getTagPatchContent(patchedKeywords: ["hallo", "test", "", "\n", "was ist das", " "], verified: true)
         try await detail.$language.load(on: app.db)
 
         try app
@@ -186,7 +186,7 @@ final class TagApiPatchTests: AppTestCase, TagTest {
 
     func testPatchTagNeedsValidIdForTagToPatch() async throws {
         let token = try await getToken(for: .user, verified: true)
-        let (repository, _, _) = try await getTagPatchContent(verifiedAt: Date())
+        let (repository, _, _) = try await getTagPatchContent(verified: true)
         let patchContent = Tag.Detail.Patch(title: "New Title", keywords: nil, idForTagDetailToPatch: UUID())
 
         try app
@@ -200,7 +200,7 @@ final class TagApiPatchTests: AppTestCase, TagTest {
 
     func testPatchTagAsUnverifiedUserFails() async throws {
         let token = try await getToken(for: .user, verified: false)
-        let (repository, _, patchContent) = try await getTagPatchContent(patchedTitle: "The patched title", verifiedAt: Date())
+        let (repository, _, patchContent) = try await getTagPatchContent(patchedTitle: "The patched title", verified: true)
 
         try app
             .describe("Patch tag title should return ok")
@@ -212,7 +212,7 @@ final class TagApiPatchTests: AppTestCase, TagTest {
     }
 
     func testPatchTagWithoutTokenFails() async throws {
-        let (repository, _, patchContent) = try await getTagPatchContent(patchedTitle: "The patched title", verifiedAt: Date())
+        let (repository, _, patchContent) = try await getTagPatchContent(patchedTitle: "The patched title", verified: true)
 
         try app
             .describe("Patch tag title should return ok")
