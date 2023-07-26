@@ -129,7 +129,7 @@ struct MediaApiController: ApiElasticDetailController, ApiElasticPagedListContro
 
         guard let mediaFileType = req.headers.contentType?.mediaFileType() else {
             if let fileType = req.headers.contentType {
-                req.logger.log(level: .critical, "A file with the following media type could not be uploaded: \(fileType.serialize()))")
+                req.logger.log(level: .notice, "A file with the following media type could not be uploaded: \(fileType.serialize()))")
                 throw Abort(.unsupportedMediaType, reason: "This content type is not supported.")
             } else {
                 throw Abort(.badRequest, reason: "No media file in body")
@@ -156,7 +156,7 @@ struct MediaApiController: ApiElasticDetailController, ApiElasticPagedListContro
         // file preparations
         guard let preferredFilenameExtension = req.headers.contentType?.preferredFilenameExtension() else {
             if let fileType = req.headers.contentType {
-                req.logger.log(level: .critical, "A file with the following media type could not be uploaded: \(fileType.serialize()))")
+                req.logger.log(level: .notice, "A file with the following media type could not be uploaded: \(fileType.serialize()))")
                 throw Abort(.unsupportedMediaType, reason: "This content type is not supported.")
             } else {
                 throw Abort(.badRequest, reason: "No media file in body")
@@ -226,6 +226,10 @@ struct MediaApiController: ApiElasticDetailController, ApiElasticPagedListContro
 
         if let mediaIdForFile = input.mediaIdForFile {
             guard let detailForFile = try await MediaDetailModel.find(mediaIdForFile, on: req.db) else {
+                throw Abort(.badRequest)
+            }
+            try await detailForFile.$media.load(on: req.db)
+            guard detailForFile.media.fileType == repository.requiredFileType else {
                 throw Abort(.badRequest)
             }
             detail.$media.id = detailForFile.$media.id
