@@ -4,7 +4,7 @@ Deletes a user.
 
 ## Request
 
-    DELETE /api/v1/users/accounts/<user-id>
+    DELETE /api/v1/user/accounts/<user-id>
 
 This endpoint is only available to the user himself and admins.
 

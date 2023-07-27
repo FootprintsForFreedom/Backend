@@ -4,7 +4,7 @@ Updates the password for a user.
 
 ## Request
 
-    PUT /api/v1/users/accounts/<user-id>/updatePassword
+    PUT /api/v1/user/accounts/<user-id>/updatePassword
 
 This endpoint is only available to the user himself.
 

@@ -4,7 +4,7 @@ Resets the user password when it has been forgotten.
 
 ## Request
 
-    POST /api/v1/users/accounts/<user-id>/resetPassword
+    POST /api/v1/user/accounts/<user-id>/resetPassword
 
 The verification token the user received has to be sent as a `BearerToken` with the request.
 

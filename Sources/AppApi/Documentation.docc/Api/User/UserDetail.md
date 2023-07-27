@@ -4,7 +4,7 @@ Gets a user detail object for the user id.
 
 ## Request
 
-    GET /api/v1/users/accounts/<user-id>
+    GET /api/v1/user/accounts/<user-id>
 
 ## Response
 

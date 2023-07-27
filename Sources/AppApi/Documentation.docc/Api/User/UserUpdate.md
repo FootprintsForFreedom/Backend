@@ -4,7 +4,7 @@ Updates an existing user from the given input.
 
 ## Request 
 
-    PUT /api/v1/users/accounts/<user-id>
+    PUT /api/v1/user/accounts/<user-id>
 
 This endpoint is only available to the user himself and admins.
 

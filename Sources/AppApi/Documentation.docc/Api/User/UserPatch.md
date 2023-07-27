@@ -4,7 +4,7 @@ Patches an existing user from the given input.
 
 ## Request
 
-    PATCH /api/v1/users/accounts/<user-id>
+    PATCH /api/v1/user/accounts/<user-id>
 
 This endpoint is only available to the user himself and admins.
 

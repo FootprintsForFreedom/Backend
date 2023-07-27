@@ -4,7 +4,7 @@ Gets the detail object for the own user.
 
 ## Request
 
-    GET /api/v1/users/accounts/me
+    GET /api/v1/user/accounts/me
 
 This endpoint is only available when a `BearerToken` is sent with the request. It will always return the user for this token.
 

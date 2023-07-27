@@ -4,7 +4,7 @@ Lists all users in pages.
 
 ## Request 
 
-    GET /api/v1/users/accounts
+    GET /api/v1/user/accounts
 
 This endpoint is only available to admins.
 
