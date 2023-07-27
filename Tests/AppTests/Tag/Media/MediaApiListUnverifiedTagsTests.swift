@@ -16,9 +16,9 @@ final class MediaApiListUnverifiedTagsTests: AppTestCase, MediaTest, TagTest {
             .bearerToken(moderatorToken)
             .expect(.ok)
             .expect(.json)
-            .expect([Tag.Repository.ListUnverifiedRelation].self) { content in
-                XCTAssert(content.contains { $0.tagId == tag.repository.id! })
-                if let responseTag = content.first(where: { $0.tagId == tag.repository.id! }) {
+            .expect(AppApi.Page<Tag.Repository.ListUnverifiedRelation>.self) { content in
+                XCTAssert(content.items.contains { $0.tagId == tag.repository.id! })
+                if let responseTag = content.items.first(where: { $0.tagId == tag.repository.id! }) {
                     XCTAssertEqual(responseTag.title, tag.detail.title)
                     XCTAssertEqual(responseTag.status, .pending)
                 }
@@ -45,9 +45,9 @@ final class MediaApiListUnverifiedTagsTests: AppTestCase, MediaTest, TagTest {
             .bearerToken(moderatorToken)
             .expect(.ok)
             .expect(.json)
-            .expect([Tag.Repository.ListUnverifiedRelation].self) { content in
-                XCTAssert(content.contains { $0.tagId == tag.repository.id! })
-                if let responseTag = content.first(where: { $0.tagId == tag.repository.id! }) {
+            .expect(AppApi.Page<Tag.Repository.ListUnverifiedRelation>.self) { content in
+                XCTAssert(content.items.contains { $0.tagId == tag.repository.id! })
+                if let responseTag = content.items.first(where: { $0.tagId == tag.repository.id! }) {
                     XCTAssertEqual(responseTag.title, tag.detail.title)
                     XCTAssertEqual(responseTag.status, .deleteRequested)
                 }
@@ -74,8 +74,8 @@ final class MediaApiListUnverifiedTagsTests: AppTestCase, MediaTest, TagTest {
             .bearerToken(moderatorToken)
             .expect(.ok)
             .expect(.json)
-            .expect([Tag.Repository.ListUnverifiedRelation].self) { content in
-                XCTAssert(!content.contains { $0.tagId == tag.repository.id! })
+            .expect(AppApi.Page<Tag.Repository.ListUnverifiedRelation>.self) { content in
+                XCTAssert(!content.items.contains { $0.tagId == tag.repository.id! })
             }
             .test()
     }

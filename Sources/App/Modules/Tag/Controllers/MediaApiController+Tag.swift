@@ -130,14 +130,14 @@ extension MediaApiController {
 
     // MARK: list unverified tags
 
-    func listUnverifiedTags(_ req: Request) async throws -> [Tag.Repository.ListUnverifiedRelation] {
+    func listUnverifiedTags(_ req: Request) async throws -> Fluent.Page<Tag.Repository.ListUnverifiedRelation> {
         try await req.onlyFor(.moderator)
         let repository = try await repository(req)
 
         let unverifiedTags = try await repository.$tags.$pivots
             .query(on: req.db)
             .filter(\.$status ~~ [.pending, .deleteRequested])
-            .all()
+            .paginate(for: req)
 
         return try await unverifiedTags.concurrentMap { tag in
             let repository = try await tag.$tag.get(on: req.db)
