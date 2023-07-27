@@ -55,7 +55,7 @@ final class PaginationApiTests: AppTestCase, MediaTest, WaypointTest, TagTest {
             "/api/v1/tags/\(tagRepositoryId)/reports/unverified": nil,
             "/api/v1/user/accounts": nil,
             "/api/v1/staticContent": nil,
-            "/api/v1/redirects": nil
+            "/api/v1/redirects": nil,
         ]
     }
 
