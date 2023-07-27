@@ -4,7 +4,7 @@ Requests a verification token for the user's email address.
 
 ## Request
 
-    POST /api/v1/users/accounts/<user-id>/requestVerification
+    POST /api/v1/user/accounts/<user-id>/requestVerification
 
 This endpoint is only available to the user himself and the email cannot yet be verified.
 

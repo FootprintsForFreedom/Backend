@@ -123,7 +123,7 @@ extension WaypointApiController: ApiRepositoryVerificationController {
             .query(on: req.db)
             .filter(\.$verifiedAt == nil)
             .sort(\.$updatedAt, .ascending) // oldest first
-            .paginate(for: req)
+            .paginate(req.pageRequest)
 
         return try unverifiedLocations.map { location in
             try .init(

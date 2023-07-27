@@ -4,7 +4,7 @@ Gets a redirect for redirect id.
 
 ## Request
 
-    GET /api/v1/redirect/<redirect-id>
+    GET /api/v1/redirects/<redirect-id>
 
 This endpoint is only available to admins.
 

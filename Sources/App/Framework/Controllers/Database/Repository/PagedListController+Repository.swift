@@ -14,7 +14,7 @@ extension PagedListController where Self: DatabaseRepositoryController {
             // only select the id field and return each id only once
             .field(\._$id)
             .unique()
-            .paginate(for: req)
+            .paginate(req.pageRequest)
         return try await afterList(req, list)
     }
 }

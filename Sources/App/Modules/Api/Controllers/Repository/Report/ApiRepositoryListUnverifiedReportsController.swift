@@ -49,7 +49,7 @@ extension ApiRepositoryListUnverifiedReportsController {
             .query(on: req.db)
             .filter(\._$verifiedAt == nil)
             .sort(\._$updatedAt, .ascending) // oldest first
-            .paginate(for: req)
+            .paginate(req.pageRequest)
 
         return try await listUnverifiedReportsOutput(req, repository, unverifiedReports)
     }

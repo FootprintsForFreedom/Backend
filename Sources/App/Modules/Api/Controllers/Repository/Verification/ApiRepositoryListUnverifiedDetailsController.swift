@@ -63,7 +63,7 @@ extension ApiRepositoryListUnverifiedDetailsController {
             .filter(LanguageModel.self, \.$priority != nil)
             .sort(\._$updatedAt, .ascending) // oldest first
 
-        let unverifiedDetails = try await beforeGetUnverifiedDetail(req, unverifiedDetailsQuery).paginate(for: req)
+        let unverifiedDetails = try await beforeGetUnverifiedDetail(req, unverifiedDetailsQuery).paginate(req.pageRequest)
 
         return try await listUnverifiedDetailsOutput(req, repository, unverifiedDetails)
     }

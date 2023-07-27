@@ -4,7 +4,7 @@ Assigns a new role to a user.
 
 ## Request
 
-    PUT /api/v1/users/accounts/<user-id>/changeRole
+    PUT /api/v1/user/accounts/<user-id>/changeRole
 
 This endpoint is only available to admins.
 

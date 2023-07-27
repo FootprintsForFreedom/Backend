@@ -4,7 +4,7 @@ Creates a new user.
 
 ## Request
 
-    POST /api/v1/users/accounts
+    POST /api/v1/user/accounts
 
 ### Input parameters
 

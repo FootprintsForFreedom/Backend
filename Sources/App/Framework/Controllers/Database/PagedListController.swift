@@ -36,7 +36,7 @@ extension PagedListController {
 
     func list(_ req: Request) async throws -> Page<DatabaseModel> {
         let queryBuilder = DatabaseModel.query(on: req.db)
-        let list = try await beforeList(req, queryBuilder).paginate(for: req)
+        let list = try await beforeList(req, queryBuilder).paginate(req.pageRequest)
         return try await afterList(req, list)
     }
 }

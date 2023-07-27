@@ -4,7 +4,7 @@ Requests a link with which to reset the user password when it was forgotten.
 
 ## Request
 
-    POST /api/v1/users/accounts/resetPassword
+    POST /api/v1/user/accounts/resetPassword
 
 ### Input parameters
 
