@@ -63,7 +63,7 @@ extension ApiListRepositoriesWithUnverifiedDetailsController {
 
         let repositoriesWithUnverifiedModelsQuery = DatabaseModel.query(on: req.db)
 
-        let repositoriesWithUnverifiedModels = try await beforeGetRepositories(req, repositoriesWithUnverifiedModelsQuery).paginate(for: req)
+        let repositoriesWithUnverifiedModels = try await beforeGetRepositories(req, repositoriesWithUnverifiedModelsQuery).paginate(req.pageRequest)
 
         return try await listRepositoriesWithUnverifiedDetailsOutput(req, repositoriesWithUnverifiedModels)
     }

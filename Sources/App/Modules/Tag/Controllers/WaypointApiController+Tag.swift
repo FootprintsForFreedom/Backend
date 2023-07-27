@@ -143,7 +143,7 @@ extension WaypointApiController {
         let unverifiedTags = try await repository.$tags.$pivots
             .query(on: req.db)
             .filter(\.$status ~~ [.pending, .deleteRequested])
-            .paginate(for: req)
+            .paginate(req.pageRequest)
 
         return try await unverifiedTags.concurrentMap { tag in
             let repository = try await tag.$tag.get(on: req.db)
