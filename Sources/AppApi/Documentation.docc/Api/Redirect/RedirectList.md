@@ -4,7 +4,7 @@ Lists all redirects in pages.
 
 ## Request
 
-    GET /api/v1/redirect
+    GET /api/v1/redirects
 
 This endpoint is only available to admins.
 
